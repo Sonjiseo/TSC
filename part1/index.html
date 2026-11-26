@@ -13,7 +13,7 @@
   <section class="hero">
     <div class="eyebrow">TSC PART 1</div>
     <h1>1부분 자기소개</h1>
-    <p>4문항 · 준비 0초 · 답변 10초. 내 정보로 답변을 만들고, 듣고 따라 말해 보세요.</p>
+    <p>4문항 · 준비 0초 · 답변 10초. 내 정보로 답변을 만들고, 소리 내어 따라 말해 보세요.</p>
   </section>
   <nav class="tabs bottom" id="tabs" aria-label="학습 메뉴"></nav>
   <section id="view" aria-live="polite"></section>
@@ -172,13 +172,12 @@ function viewLearn(){
       '<div class="card-head"><span class="badge">문제 ' + (i + 1) + '</span><span class="label">' + q.topic + '</span>' + T.doneBtn(on) + '</div>' +
       T.sayHTML(q.q) +
       '<p class="muted" style="margin:6px 0 10px">' + esc(q.q.ko) + '</p>' +
-      '<div class="row">' + T.speakBtn(q.q.hz, '질문 듣기') + '</div>' +
       '<details class="more"><summary>단어 풀이 (' + q.words.length + ')</summary><div class="words">' + q.words.map(k => wordBtn(W[k])).join('') + '</div></details>' +
       '<h3>내 답변</h3>' +
-      (a ? '<p class="ko">' + esc(a.ko) + '</p>' + T.revealHTML(T.sayHTML(a)) + '<div class="row" style="margin-top:8px">' + T.speakBtn(a.hz, '답변 듣기') + '<button class="btn ghost" type="button" data-go="me">✏️ 내 정보 바꾸기</button></div>'
+      (a ? '<p class="ko">' + esc(a.ko) + '</p>' + T.revealHTML(T.sayHTML(a)) + '<div class="row" style="margin-top:8px"><button class="btn ghost" type="button" data-go="me">✏️ 내 정보 바꾸기</button></div>'
          : '<p class="muted">‘내 답변’ 탭에서 가족을 한 명 이상 골라 주세요.</p>') +
       '<div class="tip"><b>TIP</b><span>' + esc(q.tip) + '</span></div>' +
-      '<details class="more"><summary>다른 답변 예시</summary>' + q.more.map(([hz, py, ko]) => '<div style="margin-top:8px"><p class="ko" style="margin:0">' + esc(ko) + '</p>' + T.sayHTML({hz, py}) + T.speakBtn(hz.replaceAll('___', '').replaceAll(' / ', ''), '듣기') + '</div>').join('') + '</details>' +
+      '<details class="more"><summary>다른 답변 예시</summary>' + q.more.map(([hz, py, ko]) => '<div style="margin-top:8px"><p class="ko" style="margin:0">' + esc(ko) + '</p>' + T.sayHTML({hz, py}) + '</div>').join('') + '</details>' +
       '</article>';
   });
   view.innerHTML = h;
@@ -211,7 +210,7 @@ function viewMe(){
     '<div class="row end"><button class="btn ghost" type="button" id="reset">기본값으로 되돌리기</button><button class="btn primary" type="button" data-go="learn">학습하러 가기 →</button></div>';
   const preview = () => {
     const A = answers();
-    A.forEach((a, i) => { $('#pv' + (i + 1)).innerHTML = a ? '<div class="reveal open" style="margin-top:6px">' + T.sayHTML(a) + '</div><div class="row" style="margin-top:6px">' + T.speakBtn(a.hz, '듣기') + '</div>' : '<p class="small" style="color:var(--warn)">가족을 한 명 이상 골라 주세요.</p>'; });
+    A.forEach((a, i) => { $('#pv' + (i + 1)).innerHTML = a ? '<div class="reveal open" style="margin-top:6px">' + T.sayHTML(a) + '</div><div class="row" style="margin-top:6px">' + '</div>' : '<p class="small" style="color:var(--warn)">가족을 한 명 이상 골라 주세요.</p>'; });
     ['name', 'school', 'co'].forEach(k => { const el = $('[data-warn="' + k + '"]'); if (!el) return; const w = customWord(me[k].hz, me[k].py, me[k].hg); el.textContent = w[5] && me[k].py ? '⚠️ 병음 음절 수(' + T.tonesOf(w[1]).length + ')와 한글 덩어리 수가 달라 성조선을 그릴 수 없어요. 한글을 음절마다 띄어 주세요.' : ''; });
   };
   preview();
@@ -246,7 +245,7 @@ function viewWords(){
       h += '<div class="small muted">' + (dpos + 1) + ' / ' + deck.length + '</div><div class="progress" style="margin:6px 0"><i style="width:' + (dpos / deck.length * 100) + '%"></i></div>' +
         '<div class="flash" id="flash"><button class="inner" type="button" aria-label="카드 뒤집기"><div class="face"><div class="small muted">중국어로 말해 보세요</div><div class="big-ko">' + esc(w[4]) + '</div><div class="small muted">눌러서 뒤집기</div></div>' +
         '<div class="face back"><div class="say"><div class="line py" style="font-size:28px">' + esc(T.pinyinWithExpanded(w[1])) + '</div><div class="line hg">' + T.toneHTML(w[2].replaceAll('|', ''), hgTones(w)) + '</div></div><div class="small muted">' + esc(w[4]) + '</div></div></button></div>' +
-        '<div class="row" style="justify-content:center">' + T.speakBtn(w[0], '듣기') + '<button class="btn" type="button" id="no">🔁 다시 볼래요</button><button class="btn good" type="button" id="yes">' + T.icon.check + '알아요</button></div>';
+        '<div class="row" style="justify-content:center"><button class="btn" type="button" id="no">🔁 다시 볼래요</button><button class="btn good" type="button" id="yes">' + T.icon.check + '알아요</button></div>';
     }
   }
   view.innerHTML = h;
@@ -261,15 +260,13 @@ function viewWords(){
 }
 
 /* ===== 화면: 실전 ===== */
-const exam = {showText: true, record: false, running: false, results: []};
+const exam = {record: false, running: false, results: []};
 function viewExam(){
   const rec = T.recorder();
-  view.innerHTML = '<div class="card"><h3 style="margin-top:0">⏱ 실전처럼 연습하기</h3><p class="small muted">실제 시험과 같아요: 4문항 · 질문을 듣고 <b>준비 0초</b>, 바로 <b>10초 동안 답변</b>.</p>' +
-    '<div class="row" style="margin:10px 0"><label class="check"><input type="checkbox" id="opt-text"' + (exam.showText ? ' checked' : '') + '> 질문 글자 보기</label>' +
+  view.innerHTML = '<div class="card"><h3 style="margin-top:0">⏱ 실전처럼 연습하기</h3><p class="small muted">실제 시험과 같아요: 4문항 · 질문을 읽고 <b>준비 0초</b>, 바로 <b>10초 동안 답변</b>.</p>' +
+    '<div class="row" style="margin:10px 0">' +
     (rec.supported ? '<label class="check"><input type="checkbox" id="opt-rec"' + (exam.record ? ' checked' : '') + '> 내 목소리 녹음</label>' : '') + '</div>' +
-    (T.canSpeak() ? '' : '<p class="small" style="color:var(--warn)">이 브라우저는 듣기 기능이 없어 질문을 글자로만 보여줘요.</p>') +
     '<button class="btn primary big" type="button" id="start" style="width:100%">시작하기</button></div>' + (exam.results.length ? resultsHTML() : '');
-  $('#opt-text').onchange = e => exam.showText = e.target.checked;
   $('#opt-rec') && ($('#opt-rec').onchange = e => exam.record = e.target.checked);
   $('#start').onclick = runExam;
   bindResults();
@@ -282,12 +279,10 @@ async function runExam(){
   for (let i = 0; i < QS.length && !cancelled; i++) {
     const q = QS[i];
     view.innerHTML = '<div class="card center"><div class="card-head"><span class="badge">문제 ' + (i + 1) + ' / 4</span><span class="label"></span><button class="btn ghost" type="button" id="quit">그만하기</button></div>' +
-      (exam.showText ? T.sayHTML({py: q.q.py}) : '<p class="muted">🎧 잘 듣고 답하세요</p>') +
-      '<div id="tm"><p class="muted" style="margin:40px 0">🔊 질문을 듣는 중…</p></div><p id="recstate" class="small muted"></p></div>';
-    $('#quit').onclick = () => { cancelled = true; T.stopSpeak(); cd && cd.cancel(); rec && rec.cancel(); };
-    const spoke = await T.speak(q.q.hz, {rate: 0.9});
-    if (!spoke && !cancelled) await new Promise(r => setTimeout(r, 1500));
-    if (cancelled) break;
+      T.sayHTML(q.q) + '<p class="small muted" style="margin:4px 0 0">' + esc(q.q.ko) + '</p>' +
+      '<div id="tm"></div><p id="recstate" class="small muted"></p></div>';
+    $('#quit').onclick = () => { cancelled = true; cd && cd.cancel(); rec && rec.cancel(); };
+    cd = T.countdown($('#tm'), 3, '질문 읽기', 'prep'); if (!(await cd)) { cancelled = true; break; }
     let url = null;
     if (rec) { try { await rec.start(); $('#recstate').innerHTML = '<span class="rec-dot"></span> 녹음 중'; } catch { $('#recstate').textContent = '마이크를 쓸 수 없어 녹음 없이 진행해요.'; } }
     cd = T.countdown($('#tm'), 10, '답변');
@@ -307,7 +302,7 @@ function resultsHTML(){
     '<article class="card" data-q="' + q.id + '"><div class="card-head"><span class="badge">문제 ' + (i + 1) + '</span><span class="label">' + q.topic + '</span>' + T.doneBtn(prog.has(q.id)) + '</div>' +
     T.sayHTML({py: q.q.py}) +
     (url ? '<p class="small muted" style="margin:8px 0 2px">내 답변 녹음</p><audio controls src="' + url + '" style="width:100%"></audio>' : '') +
-    (a ? '<p class="small muted" style="margin:8px 0 2px">모범 답변</p>' + T.revealHTML(T.sayHTML(a), true) + '<div class="row" style="margin-top:6px">' + T.speakBtn(a.hz, '모범 답변 듣기') + '</div>' : '') + '</article>').join('');
+    (a ? '<p class="small muted" style="margin:8px 0 2px">모범 답변</p>' + T.revealHTML(T.sayHTML(a), true) : '') + '</article>').join('');
 }
 function bindResults(){
   $$('[data-done]', view).forEach(b => b.onclick = () => { const id = b.closest('[data-q]').dataset.q; const on = !prog.has(id); prog.set(id, on); summary(); b.outerHTML = T.doneBtn(on); bindResults(); });
@@ -318,7 +313,7 @@ const view = $('#view');
 const TABS = [['learn','학습','📖'],['me','내 답변','✏️'],['words','단어','🔤'],['exam','실전','⏱']];
 const VIEWS = {learn: viewLearn, me: viewMe, words: viewWords, exam: viewExam};
 let tab = T.load('tsc-p1-tab', 'learn'); if (!VIEWS[tab]) tab = 'learn';
-function go(t){ if (exam.running) { T.toast('실전 연습 중이에요. ‘그만하기’를 먼저 눌러 주세요.'); T.tabs($('#tabs'), TABS, tab, go); return; } view.oninput = view.onchange = null; tab = t; T.save('tsc-p1-tab', t); T.stopSpeak(); T.tabs($('#tabs'), TABS, t, go); VIEWS[t](); }
+function go(t){ if (exam.running) { T.toast('실전 연습 중이에요. ‘그만하기’를 먼저 눌러 주세요.'); T.tabs($('#tabs'), TABS, tab, go); return; } view.oninput = view.onchange = null; tab = t; T.save('tsc-p1-tab', t); T.tabs($('#tabs'), TABS, t, go); VIEWS[t](); }
 view.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go); scrollTo({top: 0}); } });
 document.addEventListener('tsc:settings', () => { if (tab === 'learn') viewLearn(); });
 summary();

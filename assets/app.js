@@ -10,7 +10,7 @@ T.load = (k, d) => { try { const v = localStorage.getItem(k); return v === null 
 T.save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
 
 /* ---------- 설정 ---------- */
-const settings = T.settings = Object.assign({theme:'auto', py:true, hg:true, hz:true, brk:true, cover:true, rate:0.8}, T.load('tsc-settings', {}));
+const settings = T.settings = Object.assign({theme:'auto', py:true, hg:true, hz:true, brk:true, cover:true}, T.load('tsc-settings', {}));
 T.applySettings = () => {
   const r = document.documentElement;
   if (settings.theme === 'auto') r.removeAttribute('data-theme'); else r.dataset.theme = settings.theme;
@@ -148,7 +148,7 @@ T.sentence = (items, ko) => {
   return {hz: hz.join(''), hzHTML: hzHTML.join(''), py: pyText, hg: hgText.replace(/^ /, '').replace(/ \/ ?/g, ' / ').replace(/\s+/g, ' ').trim(), tones, ko};
 };
 T.hgTones = w => { const t = w[3] ? T.sandhi(w[3]) : []; return w[2].split(/[| ]+/).filter(Boolean).map((c, i) => [c, t[i] || 0]); };
-T.wordHTML = w => '<button class="word" type="button" data-speak="' + esc(w[0]) + '"><div class="w-py">' + esc(T.pinyinWithExpanded(w[1])) + '</div><div class="w-ko"><span class="hgw">' + T.toneHTML(w[2].replaceAll('|', ''), T.hgTones(w)) + '</span> · ' + esc(w[4]) + '</div></button>';
+T.wordHTML = w => '<div class="word"><div class="w-py">' + esc(T.pinyinWithExpanded(w[1])) + '</div><div class="w-ko"><span class="hgw">' + T.toneHTML(w[2].replaceAll('|', ''), T.hgTones(w)) + '</span> · ' + esc(w[4]) + '</div></div>';
 
 /* ---------- 문장 렌더 ---------- */
 /* row: {hz, py, hg, tones:[[소리,성조],...], ko} */
@@ -156,7 +156,7 @@ T.wordHTML = w => '<button class="word" type="button" data-speak="' + esc(w[0]) 
 T.brk = html => html.replaceAll(' / ', ' <span class="brk" aria-hidden="true">/ </span>');
 T.sayHTML = (row, opt = {}) => {
   const lines = [];
-  /* 한자는 화면에 보이지 않음 (듣기용으로만 사용) */
+  /* 한자는 화면에 보이지 않음 */
   if (row.py) lines.push('<div class="line py" lang="zh-Latn-pinyin">' + T.brk(esc(opt.noExpand ? row.py : T.pinyinWithExpanded(row.py))) + '</div>');
   if (row.hg) lines.push('<div class="line hg">' + T.brk(row.tones ? T.toneHTML(row.hg, row.tones) : esc(row.hg)) + '</div>');
   return '<div class="say">' + lines.join('') + '</div>';
@@ -167,34 +167,7 @@ document.addEventListener('click', e => {
   if (c) c.parentElement.classList.add('open');
 });
 
-/* ---------- 듣기 (브라우저 음성) ---------- */
-let zhVoice = null;
-const pickVoice = () => {
-  if (!('speechSynthesis' in window)) return;
-  const vs = speechSynthesis.getVoices();
-  zhVoice = vs.find(v => /zh[-_]CN/i.test(v.lang)) || vs.find(v => /^zh/i.test(v.lang)) || null;
-};
-if ('speechSynthesis' in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
-T.canSpeak = () => 'speechSynthesis' in window;
-T.speak = (text, opts = {}) => new Promise(res => {
-  if (!T.canSpeak() || !text) return res(false);
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'zh-CN'; if (zhVoice) u.voice = zhVoice;
-  u.rate = opts.rate || settings.rate;
-  let done = false; const fin = v => { if (!done) { done = true; clearTimeout(tm); res(v); } };
-  const tm = setTimeout(() => fin(false), 4000 + text.length * 450);
-  u.onend = () => fin(true); u.onerror = () => fin(false);
-  speechSynthesis.speak(u);
-});
-T.stopSpeak = () => { if (T.canSpeak()) speechSynthesis.cancel(); };
-document.addEventListener('click', e => {
-  const b = e.target.closest('[data-speak]');
-  if (!b) return;
-  if (!T.canSpeak()) { T.toast('이 브라우저는 듣기 기능을 지원하지 않아요'); return; }
-  b.classList.add('playing');
-  T.speak(b.dataset.speak).then(() => b.classList.remove('playing'));
-});
+/* 듣기(음성) 기능은 사용하지 않음 — 사용자 요청 */
 
 /* ---------- 녹음 ---------- */
 T.recorder = () => {
@@ -256,7 +229,7 @@ const I = T.icon = {
   check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>',
   mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg>',
 };
-T.speakBtn = (text, label = '듣기') => text ? '<button class="btn soft" type="button" data-speak="' + esc(text) + '" aria-label="중국어 ' + esc(label) + '">' + I.play + label + '</button>' : '';
+T.speakBtn = () => '';
 T.doneBtn = (on) => '<button class="btn ' + (on ? 'good' : '') + '" type="button" data-done aria-pressed="' + !!on + '">' + I.check + (on ? '외웠어요' : '외웠으면 체크') + '</button>';
 
 /* ---------- 상단 바 + 설정 시트 ---------- */
@@ -274,7 +247,6 @@ T.topbar = ({title, sub, home = '../'}) => {
     tg('cover', '답을 가리고 시작', '눌러야 중국어가 보여요. 스스로 말해 본 뒤 확인하세요.') +
     tg('py', '병음 보기') + tg('brk', '끊어 읽기 표시', '/ 표시에서 잠깐 쉬어 읽어요.') + tg('hg', '한글 발음 보기', '한글 위의 선이 성조예요. ─1성 ／2성 ⌄3성 ＼4성') +
     '<div class="toggle"><span>화면 테마</span><span class="seg" data-theme-seg>' + [['auto','자동'],['light','밝게'],['dark','어둡게']].map(([v, l]) => '<button type="button" data-v="' + v + '" aria-pressed="' + (settings.theme === v) + '">' + l + '</button>').join('') + '</span></div>' +
-    '<div class="toggle"><span>듣기 속도</span><span class="seg" data-rate-seg>' + [[0.6,'천천히'],[0.8,'보통'],[1,'빠르게']].map(([v, l]) => '<button type="button" data-v="' + v + '" aria-pressed="' + (settings.rate === v) + '">' + l + '</button>').join('') + '</span></div>' +
     '</div>';
   document.body.append(sheet);
   const open = () => sheet.classList.add('open'), close = () => sheet.classList.remove('open');
@@ -283,8 +255,6 @@ T.topbar = ({title, sub, home = '../'}) => {
     if (e.target === sheet || e.target.closest('[data-close]')) close();
     const tb = e.target.closest('[data-theme-seg] button');
     if (tb) { T.setSetting('theme', tb.dataset.v); T.$$('[data-theme-seg] button', sheet).forEach(b => b.setAttribute('aria-pressed', b === tb)); }
-    const rb = e.target.closest('[data-rate-seg] button');
-    if (rb) { T.setSetting('rate', +rb.dataset.v); T.$$('[data-rate-seg] button', sheet).forEach(b => b.setAttribute('aria-pressed', b === rb)); }
   });
   sheet.addEventListener('change', e => { const k = e.target.dataset.set; if (k) T.setSetting(k, e.target.checked); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });

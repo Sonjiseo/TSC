@@ -105,7 +105,7 @@ function summary(){ const s = T.load('tsc-summary', {}); s.p3 = {done: prog.coun
 const view = $('#view');
 
 /* ===== 조각 ===== */
-const sayBlock = (s, label, open) => '<p class="small muted" style="margin:12px 0 0">' + label + '</p><p class="ko" style="margin:0">' + esc(s.ko) + '</p>' + T.revealHTML(T.sayHTML(s), open) + '<div class="row" style="margin-top:6px">' + T.speakBtn(s.hz, '듣기') + '</div>';
+const sayBlock = (s, label, open) => '<p class="small muted" style="margin:12px 0 0">' + label + '</p><p class="ko" style="margin:0">' + esc(s.ko) + '</p>' + T.revealHTML(T.sayHTML(s), open);
 /* ===== 학습 ===== */
 function viewLearn(){
   const done = prog.count(ITEMS.map(x => x.id));
@@ -114,7 +114,7 @@ function viewLearn(){
   ITEMS.forEach((x, i) => {
     const on = prog.has(x.id);
     h += '<article class="card' + (on ? ' done' : '') + '" data-q="' + x.id + '"><div class="card-head"><span class="badge">문항 ' + (i + 1) + '</span><span class="label">' + esc(x.title) + '</span>' + T.doneBtn(on) + '</div>' +
-      '<p class="small muted" style="margin:0">질문 — 중국어로 말해 보세요</p><p class="ko" style="margin:0">' + esc(x.q.ko) + '</p>' + T.revealHTML(T.sayHTML(x.q)) + '<div class="row" style="margin-top:6px">' + T.speakBtn(x.q.hz, '질문 듣기') + '</div>' +
+      '<p class="small muted" style="margin:0">질문 — 중국어로 말해 보세요</p><p class="ko" style="margin:0">' + esc(x.q.ko) + '</p>' + T.revealHTML(T.sayHTML(x.q)) +
       sayBlock(x.a[0], '답변 ① 반응') + sayBlock(x.a[1], '답변 ② 이어서') +
       '<div class="tip"><b>TIP</b><span>' + esc(x.note) + '</span></div>' +
       (() => { const ks = [...new Set([x.q, ...x.a].flatMap(s => s.words))]; return '<details class="more"><summary>단어 (' + ks.length + ')</summary><div class="words">' + ks.map(k => T.wordHTML(W[k])).join('') + '</div></details>'; })() + '</article>';
@@ -128,7 +128,7 @@ function viewPattern(){
   view.innerHTML = '<p class="small muted" style="margin-top:14px">교재 문장에서 뽑은 말하기 틀이에요. <span class="badge accent">추가</span> 표시는 시험에 자주 나오는 상황이라 새로 넣은 패턴이에요.</p>' +
     PATTERNS.map((p, i) => '<article class="card"><div class="card-head"><span class="badge">' + (i + 1) + '</span><span class="label" style="color:var(--ink);font-size:16px">' + esc(p.t) + '</span>' + (p.tag ? '<span class="badge accent">' + p.tag + '</span>' : '') + '</div>' +
       '<p style="font-size:18px;font-weight:650;margin:0 0 4px;color:var(--brand-text)">' + esc(p.f) + '</p><p class="small muted" style="margin:0">' + esc(p.d) + '</p>' +
-      p.ex.map(s => '<div style="margin-top:10px"><p class="ko" style="margin:0;font-size:15px">' + esc(s.ko) + '</p>' + T.revealHTML(T.sayHTML(s)) + '<div class="row" style="margin-top:6px">' + T.speakBtn(s.hz, '듣기') + '</div></div>').join('') + '</article>').join('');
+      p.ex.map(s => '<div style="margin-top:10px"><p class="ko" style="margin:0;font-size:15px">' + esc(s.ko) + '</p>' + T.revealHTML(T.sayHTML(s)) + '</div>').join('') + '</article>').join('');
 }
 
 /* ===== 단어 ===== */
@@ -145,7 +145,7 @@ function viewWords(){
       h += '<div class="small muted" style="margin-top:10px">' + (dpos + 1) + ' / ' + deck.length + '</div><div class="progress" style="margin:6px 0"><i style="width:' + (dpos / deck.length * 100) + '%"></i></div>' +
         '<div class="flash" id="flash"><button class="inner" type="button" aria-label="카드 뒤집기"><div class="face"><div class="small muted">중국어로 말해 보세요</div><div class="big-ko">' + esc(wd[4]) + '</div><div class="small muted">눌러서 뒤집기</div></div>' +
         '<div class="face back"><div class="say"><div class="line py" style="font-size:28px">' + esc(T.pinyinWithExpanded(wd[1])) + '</div><div class="line hg">' + T.toneHTML(wd[2].replaceAll('|', ''), T.hgTones(wd)) + '</div></div></div></button></div>' +
-        '<div class="row" style="justify-content:center">' + T.speakBtn(wd[0], '듣기') + '<button class="btn" type="button" id="no">🔁 다시 볼래요</button><button class="btn good" type="button" id="yes">' + T.icon.check + '알아요</button></div>';
+        '<div class="row" style="justify-content:center"><button class="btn" type="button" id="no">🔁 다시 볼래요</button><button class="btn good" type="button" id="yes">' + T.icon.check + '알아요</button></div>';
     }
   }
   view.innerHTML = h;
@@ -159,15 +159,13 @@ function viewWords(){
 }
 
 /* ===== 실전 ===== */
-const exam = {showText: false, record: false, running: false, results: []};
+const exam = {record: false, running: false, results: []};
 function viewExam(){
   const rec = T.recorder();
-  view.innerHTML = '<div class="card"><h3 style="margin-top:0">⏱ 실전처럼 연습하기</h3><p class="small muted">실제 시험과 같아요: 5문항 · 질문을 듣고 <b>준비 2초</b>, <b>15초 동안 답변</b>.</p>' +
-    '<div class="row" style="margin:10px 0"><label class="check"><input type="checkbox" id="opt-text"' + (exam.showText ? ' checked' : '') + '> 질문 한국어 보기</label>' +
+  view.innerHTML = '<div class="card"><h3 style="margin-top:0">⏱ 실전처럼 연습하기</h3><p class="small muted">실제 시험과 같아요: 5문항 · 질문을 읽고 <b>준비 2초</b>, <b>15초 동안 답변</b>.</p>' +
+    '<div class="row" style="margin:10px 0">' +
     (rec.supported ? '<label class="check"><input type="checkbox" id="opt-rec"' + (exam.record ? ' checked' : '') + '> 내 목소리 녹음</label>' : '') + '</div>' +
-    (T.canSpeak() ? '' : '<p class="small" style="color:var(--warn)">이 브라우저는 듣기 기능이 없어 질문을 한국어로 보여줘요.</p>') +
     '<button class="btn primary big" type="button" id="start" style="width:100%">시작하기</button></div>' + (exam.results.length ? resultsHTML() : '');
-  $('#opt-text').onchange = e => exam.showText = e.target.checked;
   $('#opt-rec') && ($('#opt-rec').onchange = e => exam.record = e.target.checked);
   $('#start').onclick = runExam; bindResults();
 }
@@ -178,12 +176,10 @@ async function runExam(){
   for (let i = 0; i < ITEMS.length && !cancelled; i++) {
     const x = ITEMS[i];
     view.innerHTML = '<div class="card center"><div class="card-head"><span class="badge">문항 ' + (i + 1) + ' / ' + ITEMS.length + '</span><span class="label"></span><button class="btn ghost" type="button" id="quit">그만하기</button></div>' +
-      (exam.showText || !T.canSpeak() ? '<p class="ko">' + esc(x.q.ko) + '</p>' : '<p class="muted">🎧 잘 듣고 답하세요</p>') +
-      '<div id="tm"><p class="muted" style="margin:40px 0">🔊 질문을 듣는 중…</p></div><p id="recstate" class="small muted"></p></div>';
-    $('#quit').onclick = () => { cancelled = true; T.stopSpeak(); cd && cd.cancel(); rec && rec.cancel(); };
-    const spoke = await T.speak(x.q.hz, {rate: 0.9});
-    if (!spoke && !cancelled) await new Promise(r => setTimeout(r, 1500));
-    if (cancelled) break;
+      T.sayHTML(x.q) + '<p class="small muted" style="margin:4px 0 0">' + esc(x.q.ko) + '</p>' +
+      '<div id="tm"></div><p id="recstate" class="small muted"></p></div>';
+    $('#quit').onclick = () => { cancelled = true; cd && cd.cancel(); rec && rec.cancel(); };
+    cd = T.countdown($('#tm'), 4, '질문 읽기', 'prep'); if (!(await cd)) { cancelled = true; break; }
     cd = T.countdown($('#tm'), 2, '준비', 'prep'); if (!(await cd)) { cancelled = true; break; }
     let url = null;
     if (rec) { try { await rec.start(); $('#recstate').innerHTML = '<span class="rec-dot"></span> 녹음 중'; } catch { $('#recstate').textContent = '마이크를 쓸 수 없어 녹음 없이 진행해요.'; } }
@@ -215,7 +211,7 @@ const VIEWS = {learn: viewLearn, pattern: viewPattern, words: viewWords, exam: v
 let tab = T.load('tsc-p3-tab', 'learn'); if (!VIEWS[tab]) tab = 'learn';
 function go(t){
   if (exam.running) { T.toast('실전 연습 중이에요. ‘그만하기’를 먼저 눌러 주세요.'); T.tabs($('#tabs'), TABS, tab, go); return; }
-  tab = t; T.save('tsc-p3-tab', t); T.stopSpeak(); T.tabs($('#tabs'), TABS, t, go); VIEWS[t]();
+  tab = t; T.save('tsc-p3-tab', t); T.tabs($('#tabs'), TABS, t, go); VIEWS[t]();
 }
 view.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go); scrollTo({top: 0}); } });
 document.addEventListener('tsc:settings', () => { if (tab !== 'exam') VIEWS[tab](); });
