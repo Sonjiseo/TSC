@@ -158,7 +158,7 @@ function summary(){
 }
 
 /* ===== 공통 조각 ===== */
-const hgTones = w => w[2].split(/[| ]+/).filter(Boolean).map((c, i) => [c, w[3] ? w[3][i] || 0 : 0]);
+const hgTones = T.hgTones;
 const wordBtn = w => T.wordHTML(w);
 
 /* ===== 화면: 학습 ===== */

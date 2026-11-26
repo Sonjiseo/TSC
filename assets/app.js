@@ -147,7 +147,7 @@ T.sentence = (items, ko) => {
   const pyText = py.join(' ').replace(/(^|[.?!] )(\S)/g, (m, a, b) => a + b.toUpperCase());
   return {hz: hz.join(''), hzHTML: hzHTML.join(''), py: pyText, hg: hgText.replace(/^ /, '').replace(/ \/ ?/g, ' / ').replace(/\s+/g, ' ').trim(), tones, ko};
 };
-T.hgTones = w => w[2].split(/[| ]+/).filter(Boolean).map((c, i) => [c, w[3] ? w[3][i] || 0 : 0]);
+T.hgTones = w => { const t = w[3] ? T.sandhi(w[3]) : []; return w[2].split(/[| ]+/).filter(Boolean).map((c, i) => [c, t[i] || 0]); };
 T.wordHTML = w => '<button class="word" type="button" data-speak="' + esc(w[0]) + '"><div class="w-py">' + esc(T.pinyinWithExpanded(w[1])) + '</div><div class="w-ko"><span class="hgw">' + T.toneHTML(w[2].replaceAll('|', ''), T.hgTones(w)) + '</span> · ' + esc(w[4]) + '</div></button>';
 
 /* ---------- 문장 렌더 ---------- */
