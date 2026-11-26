@@ -98,6 +98,10 @@ h3{font-size:17px;margin:18px 0 6px}
 .say .line+.line{margin-top:4px}
 .say .tag{display:inline-block;width:42px;font-size:11px;font-weight:700;color:var(--muted);vertical-align:2px}
 body.hide-py .say .py,body.hide-hg .say .hg,body.hide-hz .say .hz{display:none}
+/* 끊어 읽기 표시 */
+.brk{color:var(--accent);font-weight:800;font-family:system-ui,sans-serif;font-size:.9em;margin:0 .1em;user-select:none}
+.say .hz .brk{margin:0 .25em}
+body.hide-brk .brk{display:none}
 ruby{ruby-position:over}
 rt{font-family:system-ui,sans-serif;font-size:.5em;color:var(--brand-text);font-weight:600;letter-spacing:0}
 body.hide-py rt{visibility:hidden}

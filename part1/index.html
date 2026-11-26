@@ -83,6 +83,7 @@ const PUNCT = {'，':',','。':'.','？':'?','、':',','！':'!'};
 function sentence(items, ko){
   const hz = [], hzHTML = [], py = [], hgW = [], toneW = [];
   items.forEach(it => {
+    if (it === '/') { hzHTML.push(' <span class="brk" aria-hidden="true">/</span> '); py.push('/'); hgW.push('/'); toneW.push(null); return; }
     if (typeof it === 'string') { hz.push(it); hzHTML.push(esc(it)); if (py.length) py[py.length-1] += PUNCT[it] || it; hgW.push(null); toneW.push(null); return; }
     const [h, p, g, t] = it;
     hz.push(h); hzHTML.push('<ruby>' + esc(h) + '<rt>' + esc(p) + '</rt></ruby>');
@@ -96,6 +97,7 @@ function sentence(items, ko){
   const hgParts = [], tones = [];
   hgW.forEach((g, i) => {
     if (g === null) return;
+    if (g === '/') { hgParts.push('/'); return; }
     const chunks = g.split(/[| ]+/).filter(Boolean);
     hgParts.push(g.replaceAll('|', ''));
     chunks.forEach((c, k) => tones.push([c, out[i] ? out[i][k] || 0 : 0]));
@@ -111,37 +113,37 @@ const saveMe = () => T.save('tsc-p1-me', me);
 
 function answers(){
   const nm = customWord(me.name.hz, me.name.py, me.name.hg);
-  const a1 = sentence([W.wo, W.jiao, nm, '。'], '저는 ' + (me.name.ko || me.name.hz) + '(이)라고 합니다.');
-  const a2 = sentence([W.wo, W.de, W.shengri, W.shi, ...yearWords(me.y), W.nian, numWord(me.m), W.yue, numWord(me.d), W.hao, '。'], '제 생일은 ' + me.y + '년 ' + me.m + '월 ' + me.d + '일입니다.');
+  const a1 = sentence([W.wo, W.jiao, '/', nm, '。'], '저는 ' + (me.name.ko || me.name.hz) + '(이)라고 합니다.');
+  const a2 = sentence([W.wo, W.de, W.shengri, W.shi, '/', ...yearWords(me.y), W.nian, '/', numWord(me.m), W.yue, '/', numWord(me.d), W.hao, '。'], '제 생일은 ' + me.y + '년 ' + me.m + '월 ' + me.d + '일입니다.');
   const fam = FAMILY_ORDER.filter(k => me.family.includes(k));
   const n = fam.length + 1;
   const famItems = []; fam.forEach((k, i) => { if (i) famItems.push('、'); famItems.push(FAMILY[k]); });
   const a3 = fam.length
-    ? sentence([W.wo, W.jia, W.you, numWord(n, true), W.kou, W.ren, '，', ...famItems, W.he, W.wo, '。'], '저희 가족은 ' + n + '명입니다. ' + fam.map(k => FAMILY[k][4].replace(/ \(.*\)/, '')).join(', ') + '와(과) 저입니다.')
+    ? sentence([W.wo, W.jia, '/', W.you, numWord(n, true), W.kou, W.ren, '，', ...famItems, W.he, W.wo, '。'], '저희 가족은 ' + n + '명입니다. ' + fam.map(k => FAMILY[k][4].replace(/ \(.*\)/, '')).join(', ') + '와(과) 저입니다.')
     : null;
   let a4;
   if (me.job === 'study') {
     const sc = customWord(me.school.hz, me.school.py, me.school.hg);
-    a4 = sentence([W.wo, W.zai, sc, W.shangxue, '。'], '저는 ' + (me.school.ko || me.school.hz) + '에 다닙니다.');
+    a4 = sentence([W.wo, W.zai, sc, '/', W.shangxue, '。'], '저는 ' + (me.school.ko || me.school.hz) + '에 다닙니다.');
   } else {
     const co = me.company === 'custom' ? customWord(me.co.hz, me.co.py, me.co.hg) : COMPANIES[me.company];
     const dp = DEPTS[me.dept];
     const coKo = me.company === 'custom' ? (me.co.ko || me.co.hz) : co[4];
-    a4 = sentence([W.wo, W.zai, co, W.gongsi, ...(dp ? [dp] : []), W.gongzuo, '。'], '저는 ' + coKo + ' ' + (dp ? dp[4] + '에서' : '회사에서') + ' 일합니다.');
+    a4 = sentence([W.wo, W.zai, co, W.gongsi, ...(dp ? [dp] : []), '/', W.gongzuo, '。'], '저는 ' + coKo + ' ' + (dp ? dp[4] + '에서' : '회사에서') + ' 일합니다.');
   }
   return [a1, a2, a3, a4];
 }
 
 /* ===== 문제 ===== */
 const QS = [
-  {id:'q1', topic:'이름', q:sentence([W.ni, W.jiao, W.shenme, W.mingzi, '？'], '당신의 이름은 무엇입니까?'), words:['ni','jiao','shenme','mingzi'],
-   tip:'叫 jiào 뒤에 이름만 바꿔 넣으면 돼요. 질문의 你 nǐ → 답의 我 wǒ로 바꿔요.', more:[['我的名字叫___。','Wǒ de míngzi jiào ___.','제 이름은 ___입니다. (조금 더 긴 답)']]},
-  {id:'q2', topic:'생년월일', q:sentence([W.qing, W.shuochu, W.ni, W.de, W.chusheng, W.nian, W.yue, W.ri, '。'], '당신의 생년월일을 말해 보세요.'), words:['qing','shuochu','de','chusheng','nian','yue','ri','shengri','hao'],
-   tip:'연도는 숫자를 하나씩 읽어요: 1991 → yī jiǔ jiǔ yī nián. 말할 때 날짜는 日 rì보다 号 hào를 써요.', more:[['我是___年___月___号出生的。','Wǒ shì ___ nián ___ yuè ___ hào chūshēng de.','저는 ___년 ___월 ___일에 태어났어요.']]},
-  {id:'q3', topic:'가족 수', q:sentence([W.ni, W.jia, W.you, W.ji, W.kou, W.ren, '？'], '당신의 가족은 몇 명입니까?'), words:['jia','you','ji','kou','ren','he'],
-   tip:'2명은 èr이 아니라 两 liǎng이에요. 가족 수는 口 kǒu로 세고, 마지막은 和我 hé wǒ(~와 저)로 끝내요.', more:[['我家有三口人，爸爸、妈妈和我。','Wǒ jiā yǒu sān kǒu rén, bàba, māma hé wǒ.','저희 가족은 3명입니다. 아빠, 엄마와 저입니다.']]},
-  {id:'q4', topic:'직장·학교', q:sentence([W.ni, W.zai, W.shenme, W.difang, W.gongzuo, '？', W.huozhe, W.ni, W.zai, W.nage, W.xuexiao, W.shangxue, '？'], '당신은 어디에서 일합니까? 혹은 어느 학교에 다닙니까?'), words:['zai','difang','gongzuo','huozhe','nage','xuexiao','shangxue','gongsi','bu'],
-   tip:'在 zài + 장소 + 동작 순서예요. 직장인은 工作 gōngzuò(일하다), 학생은 上学 shàngxué(학교에 다니다)로 답해요.', more:[['我在首尔大学上学。','Wǒ zài Shǒu\'ěr Dàxué shàngxué.','저는 서울대학교에 다녀요. (학생)'],['我在三星公司工作。','Wǒ zài Sānxīng gōngsī gōngzuò.','저는 삼성에서 일해요. (부서 없이)']]},
+  {id:'q1', topic:'이름', q:sentence([W.ni, W.jiao, '/', W.shenme, W.mingzi, '？'], '당신의 이름은 무엇입니까?'), words:['ni','jiao','shenme','mingzi'],
+   tip:'叫 jiào 뒤에 이름만 바꿔 넣으면 돼요. 질문의 你 nǐ → 답의 我 wǒ로 바꿔요.', more:[['我的名字 / 叫___。','Wǒ de míngzi / jiào ___.','제 이름은 ___입니다. (조금 더 긴 답)']]},
+  {id:'q2', topic:'생년월일', q:sentence([W.qing, W.shuochu, '/', W.ni, W.de, W.chusheng, W.nian, W.yue, W.ri, '。'], '당신의 생년월일을 말해 보세요.'), words:['qing','shuochu','de','chusheng','nian','yue','ri','shengri','hao'],
+   tip:'연도는 숫자를 하나씩 읽어요: 1991 → yī jiǔ jiǔ yī nián. 말할 때 날짜는 日 rì보다 号 hào를 써요.', more:[['我是 / ___年___月___号 / 出生的。','Wǒ shì / ___ nián ___ yuè ___ hào / chūshēng de.','저는 ___년 ___월 ___일에 태어났어요.']]},
+  {id:'q3', topic:'가족 수', q:sentence([W.ni, W.jia, '/', W.you, W.ji, W.kou, W.ren, '？'], '당신의 가족은 몇 명입니까?'), words:['jia','you','ji','kou','ren','he'],
+   tip:'2명은 èr이 아니라 两 liǎng이에요. 가족 수는 口 kǒu로 세고, 마지막은 和我 hé wǒ(~와 저)로 끝내요.', more:[['我家 / 有三口人，爸爸、妈妈和我。','Wǒ jiā / yǒu sān kǒu rén, bàba, māma hé wǒ.','저희 가족은 3명입니다. 아빠, 엄마와 저입니다.']]},
+  {id:'q4', topic:'직장·학교', q:sentence([W.ni, W.zai, W.shenme, W.difang, '/', W.gongzuo, '？', W.huozhe, '/', W.ni, W.zai, W.nage, W.xuexiao, '/', W.shangxue, '？'], '당신은 어디에서 일합니까? 혹은 어느 학교에 다닙니까?'), words:['zai','difang','gongzuo','huozhe','nage','xuexiao','shangxue','gongsi','bu'],
+   tip:'在 zài + 장소 + 동작 순서예요. 직장인은 工作 gōngzuò(일하다), 학생은 上学 shàngxué(학교에 다니다)로 답해요.', more:[['我在首尔大学 / 上学。','Wǒ zài Shǒu\'ěr Dàxué / shàngxué.','저는 서울대학교에 다녀요. (학생)'],['我在三星公司 / 工作。','Wǒ zài Sānxīng gōngsī / gōngzuò.','저는 삼성에서 일해요. (부서 없이)']]},
 ];
 
 const prog = T.progress('p1');
@@ -173,7 +175,7 @@ function viewLearn(){
       (a ? '<p class="ko">' + esc(a.ko) + '</p>' + T.revealHTML(T.sayHTML(a)) + '<div class="row" style="margin-top:8px">' + T.speakBtn(a.hz, '답변 듣기') + '<button class="btn ghost" type="button" data-go="me">✏️ 내 정보 바꾸기</button></div>'
          : '<p class="muted">‘내 답변’ 탭에서 가족을 한 명 이상 골라 주세요.</p>') +
       '<div class="tip"><b>TIP</b><span>' + esc(q.tip) + '</span></div>' +
-      '<details class="more"><summary>다른 답변 예시</summary>' + q.more.map(([hz, py, ko]) => '<div style="margin-top:8px"><p class="ko" style="margin:0">' + esc(ko) + '</p>' + T.sayHTML({hz, py}) + T.speakBtn(hz.replaceAll('___', ''), '듣기') + '</div>').join('') + '</details>' +
+      '<details class="more"><summary>다른 답변 예시</summary>' + q.more.map(([hz, py, ko]) => '<div style="margin-top:8px"><p class="ko" style="margin:0">' + esc(ko) + '</p>' + T.sayHTML({hz, py}) + T.speakBtn(hz.replaceAll('___', '').replaceAll(' / ', ''), '듣기') + '</div>').join('') + '</details>' +
       '</article>';
   });
   view.innerHTML = h;

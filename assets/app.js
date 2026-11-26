@@ -10,7 +10,7 @@ T.load = (k, d) => { try { const v = localStorage.getItem(k); return v === null 
 T.save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
 
 /* ---------- 설정 ---------- */
-const settings = T.settings = Object.assign({theme:'auto', py:true, hg:true, hz:true, cover:true, rate:0.8}, T.load('tsc-settings', {}));
+const settings = T.settings = Object.assign({theme:'auto', py:true, hg:true, hz:true, brk:true, cover:true, rate:0.8}, T.load('tsc-settings', {}));
 T.applySettings = () => {
   const r = document.documentElement;
   if (settings.theme === 'auto') r.removeAttribute('data-theme'); else r.dataset.theme = settings.theme;
@@ -18,6 +18,7 @@ T.applySettings = () => {
     document.body.classList.toggle('hide-py', !settings.py);
     document.body.classList.toggle('hide-hg', !settings.hg);
     document.body.classList.toggle('hide-hz', !settings.hz);
+    document.body.classList.toggle('hide-brk', !settings.brk);
   }
 };
 T.setSetting = (k, v) => { settings[k] = v; T.save('tsc-settings', settings); T.applySettings(); document.dispatchEvent(new CustomEvent('tsc:settings')); };
@@ -102,11 +103,13 @@ T.tonesOf = text => (text.match(SYL) || []).map(s => { let t = 0; for (const c o
 
 /* ---------- 문장 렌더 ---------- */
 /* row: {hz, py, hg, tones:[[소리,성조],...], ko} */
+/* 끊어 읽기: 문장 속 " / " 를 표시용 span으로 */
+T.brk = html => html.replaceAll(' / ', ' <span class="brk" aria-hidden="true">/ </span>');
 T.sayHTML = (row, opt = {}) => {
   const lines = [];
-  if (row.hz) lines.push('<div class="line hz" lang="zh-CN">' + (row.hzHTML || esc(row.hz)) + '</div>');
-  if (row.py) lines.push('<div class="line py" lang="zh-Latn-pinyin">' + esc(opt.noExpand ? row.py : T.pinyinWithExpanded(row.py)) + '</div>');
-  if (row.hg) lines.push('<div class="line hg">' + (row.tones ? T.toneHTML(row.hg, row.tones) : esc(row.hg)) + '</div>');
+  if (row.hz) lines.push('<div class="line hz" lang="zh-CN">' + (row.hzHTML || esc(row.hz).replaceAll(' / ', '<span class="brk" aria-hidden="true">/</span>')) + '</div>');
+  if (row.py) lines.push('<div class="line py" lang="zh-Latn-pinyin">' + T.brk(esc(opt.noExpand ? row.py : T.pinyinWithExpanded(row.py))) + '</div>');
+  if (row.hg) lines.push('<div class="line hg">' + T.brk(row.tones ? T.toneHTML(row.hg, row.tones) : esc(row.hg)) + '</div>');
   return '<div class="say">' + lines.join('') + '</div>';
 };
 T.revealHTML = (inner, open) => '<div class="reveal' + (open || !settings.cover ? ' open' : '') + '">' + inner + '<button class="cover" type="button">👀 눌러서 보기</button></div>';
@@ -220,7 +223,7 @@ T.topbar = ({title, sub, home = '../'}) => {
   const tg = (k, label, hint) => '<label class="toggle"><span>' + label + (hint ? '<br><span class="small muted">' + hint + '</span>' : '') + '</span><input type="checkbox" data-set="' + k + '"' + (settings[k] ? ' checked' : '') + '></label>';
   sheet.innerHTML = '<div class="panel"><div class="row"><h3 style="margin:0">보기 설정</h3><span class="spacer"></span><button class="btn ghost" type="button" data-close>닫기</button></div>' +
     tg('cover', '답을 가리고 시작', '눌러야 중국어가 보여요. 스스로 말해 본 뒤 확인하세요.') +
-    tg('hz', '한자 보기') + tg('py', '병음 보기') + tg('hg', '한글 발음 보기', '한글 위의 선이 성조예요. ─1성 ／2성 ⌄3성 ＼4성') +
+    tg('hz', '한자 보기') + tg('py', '병음 보기') + tg('brk', '끊어 읽기 표시', '/ 표시에서 잠깐 쉬어 읽어요.') + tg('hg', '한글 발음 보기', '한글 위의 선이 성조예요. ─1성 ／2성 ⌄3성 ＼4성') +
     '<div class="toggle"><span>화면 테마</span><span class="seg" data-theme-seg>' + [['auto','자동'],['light','밝게'],['dark','어둡게']].map(([v, l]) => '<button type="button" data-v="' + v + '" aria-pressed="' + (settings.theme === v) + '">' + l + '</button>').join('') + '</span></div>' +
     '<div class="toggle"><span>듣기 속도</span><span class="seg" data-rate-seg>' + [[0.6,'천천히'],[0.8,'보통'],[1,'빠르게']].map(([v, l]) => '<button type="button" data-v="' + v + '" aria-pressed="' + (settings.rate === v) + '">' + l + '</button>').join('') + '</span></div>' +
     '</div>';
