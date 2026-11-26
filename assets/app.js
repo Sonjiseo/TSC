@@ -113,6 +113,43 @@ T.numToMark = text => text.replace(/([a-züv]+)([0-5])/gi, (_, s, d) => {
 /* 병음 음절별 성조 목록 */
 T.tonesOf = text => (text.match(SYL) || []).map(s => { let t = 0; for (const c of s.toLowerCase()) t = t || toneOf(c); return t; });
 
+/* ---------- 단어 목록으로 문장 만들기 ----------
+   단어: [한자, 병음, 한글(음절은 | 또는 공백으로 구분), 성조들, 뜻]
+   문장부호 '，。？！、' 와 끊어 읽기 '/' 를 사이에 넣는다. 3성 연속은 자동 변조. */
+const PUNCT = {'，':',','。':'.','？':'?','、':',','！':'!'};
+T.sentence = (items, ko) => {
+  const hz = [], hzHTML = [], py = [], hgW = [], toneW = [];
+  items.forEach(it => {
+    if (it === '/') { hzHTML.push(' <span class="brk" aria-hidden="true">/</span> '); py.push('/'); hgW.push('/'); toneW.push(null); return; }
+    if (typeof it === 'string') { hz.push(it); hzHTML.push(esc(it)); if (py.length) py[py.length-1] += PUNCT[it] || it; hgW.push(null); toneW.push(null); return; }
+    const [h, p, g, t] = it;
+    hz.push(h); hzHTML.push('<ruby>' + esc(h) + '<rt>' + esc(p) + '</rt></ruby>');
+    py.push(p); hgW.push(g); toneW.push(t);
+  });
+  let seg = []; const out = [];
+  const flush = () => { const s = T.sandhi(seg.flatMap(i => toneW[i])); let k = 0; seg.forEach(i => { out[i] = toneW[i].map(() => s[k++]); }); seg = []; };
+  toneW.forEach((t, i) => { if (!t) { flush(); out[i] = null; } else seg.push(i); });
+  flush();
+  const hgParts = [], tones = [];
+  hgW.forEach((g, i) => {
+    if (g === null) return;
+    if (g === '/') { hgParts.push('/'); return; }
+    g.split(/[| ]+/).filter(Boolean).forEach((c, k) => tones.push([c, out[i] ? out[i][k] || 0 : 0]));
+    hgParts.push(g.replaceAll('|', ''));
+  });
+  /* 문장부호 뒤 한글 줄에 쉼표 표시 */
+  let hgText = ''; let pi = 0;
+  items.forEach(it => {
+    if (it === '/') { hgText += ' /'; pi++; return; }
+    if (typeof it === 'string') { if (/[，。？！、]/.test(it)) hgText += PUNCT[it]; return; }
+    hgText += (hgText ? ' ' : '') + hgParts[pi++];
+  });
+  const pyText = py.join(' ').replace(/(^|[.?!] )(\S)/g, (m, a, b) => a + b.toUpperCase());
+  return {hz: hz.join(''), hzHTML: hzHTML.join(''), py: pyText, hg: hgText.replace(/^ /, '').replace(/ \/ ?/g, ' / ').replace(/\s+/g, ' ').trim(), tones, ko};
+};
+T.hgTones = w => w[2].split(/[| ]+/).filter(Boolean).map((c, i) => [c, w[3] ? w[3][i] || 0 : 0]);
+T.wordHTML = w => '<button class="word" type="button" data-speak="' + esc(w[0]) + '"><div class="w-hz">' + esc(w[0]) + '</div><div class="w-py">' + esc(T.pinyinWithExpanded(w[1])) + '</div><div class="w-ko"><span class="hgw">' + T.toneHTML(w[2].replaceAll('|', ''), T.hgTones(w)) + '</span> · ' + esc(w[4]) + '</div></button>';
+
 /* ---------- 문장 렌더 ---------- */
 /* row: {hz, py, hg, tones:[[소리,성조],...], ko} */
 /* 끊어 읽기: 문장 속 " / " 를 표시용 span으로 */
