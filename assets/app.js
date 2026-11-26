@@ -169,28 +169,6 @@ document.addEventListener('click', e => {
 
 /* 듣기(음성) 기능은 사용하지 않음 — 사용자 요청 */
 
-/* ---------- 녹음 ---------- */
-T.recorder = () => {
-  let rec = null, chunks = [], stream = null;
-  return {
-    supported: !!(navigator.mediaDevices && window.MediaRecorder),
-    async start(){
-      stream = await navigator.mediaDevices.getUserMedia({audio:true});
-      chunks = []; rec = new MediaRecorder(stream);
-      rec.ondataavailable = e => e.data.size && chunks.push(e.data);
-      rec.start();
-    },
-    stop(){
-      return new Promise(res => {
-        if (!rec || rec.state === 'inactive') return res(null);
-        rec.onstop = () => { stream.getTracks().forEach(t => t.stop()); res(URL.createObjectURL(new Blob(chunks, {type: rec.mimeType || 'audio/webm'}))); };
-        rec.stop();
-      });
-    },
-    cancel(){ try { rec && rec.state !== 'inactive' && rec.stop(); } catch {} stream && stream.getTracks().forEach(t => t.stop()); },
-  };
-};
-
 /* ---------- 타이머 ---------- */
 /* el 안에 원형 카운트다운. 반환: Promise (끝나면 true, 취소되면 false) */
 T.countdown = (el, seconds, label, kind = '') => {
@@ -227,7 +205,6 @@ const I = T.icon = {
   gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>',
   play:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 010 7M18.5 5.5a9 9 0 010 13"/></svg>',
   check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>',
-  mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg>',
 };
 T.speakBtn = () => '';
 T.doneBtn = (on) => '<button class="btn ' + (on ? 'good' : '') + '" type="button" data-done aria-pressed="' + !!on + '">' + I.check + (on ? '외웠어요' : '외웠으면 체크') + '</button>';

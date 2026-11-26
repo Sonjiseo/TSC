@@ -17,7 +17,7 @@
   </section>
   <nav class="tabs bottom" id="tabs" aria-label="학습 메뉴"></nav>
   <section id="view" aria-live="polite"></section>
-  <p class="foot">진도와 녹음은 이 기기 브라우저에만 남아요.</p>
+  <p class="foot">진도는 이 기기 브라우저에만 남아요.</p>
 </main>
 <script>
 const T = TSC, {esc, $, $$} = T;
@@ -159,46 +159,37 @@ function viewWords(){
 }
 
 /* ===== 실전 ===== */
-const exam = {record: false, running: false, results: []};
+const exam = {running: false, results: []};
 function viewExam(){
-  const rec = T.recorder();
   view.innerHTML = '<div class="card"><h3 style="margin-top:0">⏱ 실전처럼 연습하기</h3><p class="small muted">실제 시험과 같아요: 5문항 · 질문을 읽고 <b>준비 2초</b>, <b>15초 동안 답변</b>.</p>' +
-    '<div class="row" style="margin:10px 0">' +
-    (rec.supported ? '<label class="check"><input type="checkbox" id="opt-rec"' + (exam.record ? ' checked' : '') + '> 내 목소리 녹음</label>' : '') + '</div>' +
     '<button class="btn primary big" type="button" id="start" style="width:100%">시작하기</button></div>' + (exam.results.length ? resultsHTML() : '');
-  $('#opt-rec') && ($('#opt-rec').onchange = e => exam.record = e.target.checked);
   $('#start').onclick = runExam; bindResults();
 }
 async function runExam(){
   exam.results = []; exam.running = true;
-  const rec = exam.record ? T.recorder() : null;
   let cancelled = false, cd = null;
   for (let i = 0; i < ITEMS.length && !cancelled; i++) {
     const x = ITEMS[i];
     view.innerHTML = '<div class="card center"><div class="card-head"><span class="badge">문항 ' + (i + 1) + ' / ' + ITEMS.length + '</span><span class="label"></span><button class="btn ghost" type="button" id="quit">그만하기</button></div>' +
       T.sayHTML(x.q) + '<p class="small muted" style="margin:4px 0 0">' + esc(x.q.ko) + '</p>' +
-      '<div id="tm"></div><p id="recstate" class="small muted"></p></div>';
-    $('#quit').onclick = () => { cancelled = true; cd && cd.cancel(); rec && rec.cancel(); };
+      '<div id="tm"></div></div>';
+    $('#quit').onclick = () => { cancelled = true; cd && cd.cancel(); };
     cd = T.countdown($('#tm'), 4, '질문 읽기', 'prep'); if (!(await cd)) { cancelled = true; break; }
     cd = T.countdown($('#tm'), 2, '준비', 'prep'); if (!(await cd)) { cancelled = true; break; }
-    let url = null;
-    if (rec) { try { await rec.start(); $('#recstate').innerHTML = '<span class="rec-dot"></span> 녹음 중'; } catch { $('#recstate').textContent = '마이크를 쓸 수 없어 녹음 없이 진행해요.'; } }
     cd = T.countdown($('#tm'), 15, '답변');
     const ok = await cd;
-    if (rec) url = await rec.stop();
     if (!ok) { cancelled = true; break; }
-    exam.results.push({x, url});
+    exam.results.push({x});
   }
   exam.running = false;
-  if (cancelled) { rec && rec.cancel(); exam.results = []; viewExam(); return; }
+  if (cancelled) { exam.results = []; viewExam(); return; }
   view.innerHTML = resultsHTML() + '<div class="row end"><button class="btn primary" type="button" id="restart">한 번 더</button></div>';
   bindResults(); $('#restart').onclick = runExam;
 }
 function resultsHTML(){
-  return '<h2>결과 확인</h2><p class="small muted">모범 답변과 비교하고, 잘 말한 문항은 ‘외웠어요’로 표시하세요.</p>' + exam.results.map(({x, url}, i) =>
+  return '<h2>결과 확인</h2><p class="small muted">모범 답변과 비교하고, 잘 말한 문항은 ‘외웠어요’로 표시하세요.</p>' + exam.results.map(({x}, i) =>
     '<article class="card" data-q="' + x.id + '"><div class="card-head"><span class="badge">문항 ' + (i + 1) + '</span><span class="label">' + esc(x.title) + '</span>' + T.doneBtn(prog.has(x.id)) + '</div>' +
     '<p class="ko" style="margin:0">' + esc(x.q.ko) + '</p>' + '<div class="reveal open">' + T.sayHTML(x.q) + '</div>' +
-    (url ? '<p class="small muted" style="margin:8px 0 2px">내 답변 녹음</p><audio controls src="' + url + '" style="width:100%"></audio>' : '') +
     sayBlock(x.a[0], '모범 답변 ①', true) + sayBlock(x.a[1], '모범 답변 ②', true) + '</article>').join('');
 }
 function bindResults(){

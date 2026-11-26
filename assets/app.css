@@ -170,8 +170,6 @@ label.field > span{display:block;font-size:13px;font-weight:700;color:var(--mute
 .timer .t{text-align:center;line-height:1.1}
 .timer .t b{font-size:42px;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
 .timer .t span{display:block;font-size:13px;font-weight:700;color:var(--muted)}
-.rec-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#e0412f;animation:blink 1s infinite}
-@keyframes blink{50%{opacity:.25}}
 .center{text-align:center}
 
 /* 플래시카드 */
