@@ -30,7 +30,7 @@ const W = {
   ni:['你','nǐ','니',[3],'너, 당신'], wo:['我','wǒ','워',[3],'나, 저'],
   jiao:['叫','jiào','쟈오',[4],'(이름을) ~라고 부르다'], shenme:['什么','shénme','선|머',[2,0],'무엇, 무슨'], mingzi:['名字','míngzi','밍|쯔',[2,0],'이름'],
   qing:['请','qǐng','칭',[3],'~해 주세요 (please)'], shuochu:['说出','shuōchū','숴|추',[1,1],'말해 내다, 말하다'], de:['的','de','더',[0],'~의'],
-  chusheng:['出生','chūshēng','추|성',[1,1],'태어나다, 출생'], nian:['年','nián','녠',[2],'년'], yue:['月','yuè','웨',[4],'월'], ri:['日','rì','르',[4],'일 (글말)'],
+  chusheng:['出生','chūshēng','추|성',[1,1],'태어나다, 출생'], nian:['年','nián','녠',[2],'년'], yue:['月','yuè','위에',[4],'월'], ri:['日','rì','르',[4],'일 (글말)'],
   shengri:['生日','shēngrì','성|르',[1,4],'생일'], shi:['是','shì','스',[4],'~이다'], hao:['号','hào','하오',[4],'일 (날짜, 입말)'],
   jia:['家','jiā','자',[1],'집, 가족'], you:['有','yǒu','요우',[3],'있다'], ji:['几','jǐ','지',[3],'몇'], kou:['口','kǒu','커우',[3],'식구를 세는 말'], ren:['人','rén','런',[2],'사람'],
   he:['和','hé','허',[2],'~와/과'], ge:['个','gè','거',[4],'개, 명 (사람·물건을 세는 말)'], meiyou:['没有','méiyǒu','메이|요우',[2,3],'없다'],
@@ -113,13 +113,13 @@ const saveMe = () => T.save('tsc-p1-me', me);
 
 function answers(){
   const nm = customWord(me.name.hz, me.name.py, me.name.hg);
-  const a1 = sentence([W.wo, W.jiao, '/', nm, '。'], '저는 ' + (me.name.ko || me.name.hz) + '(이)라고 합니다.');
-  const a2 = sentence([W.wo, W.de, W.shengri, W.shi, '/', ...yearWords(me.y), W.nian, '/', numWord(me.m), W.yue, '/', numWord(me.d), W.hao, '。'], '제 생일은 ' + me.y + '년 ' + me.m + '월 ' + me.d + '일입니다.');
+  const a1 = sentence([W.wo, W.jiao, nm, '。'], '저는 ' + (me.name.ko || me.name.hz) + '(이)라고 합니다.');
+  const a2 = sentence([W.wo, W.de, W.shengri, W.shi, '/', ...yearWords(me.y), W.nian, '/', numWord(me.m), W.yue, numWord(me.d), W.hao, '。'], '제 생일은 ' + me.y + '년 ' + me.m + '월 ' + me.d + '일입니다.');
   const fam = FAMILY_ORDER.filter(k => me.family.includes(k));
   const n = fam.length + 1;
   const famItems = []; fam.forEach((k, i) => { if (i) famItems.push('、'); famItems.push(FAMILY[k]); });
   const a3 = fam.length
-    ? sentence([W.wo, W.jia, '/', W.you, numWord(n, true), W.kou, W.ren, '，', ...famItems, W.he, W.wo, '。'], '저희 가족은 ' + n + '명입니다. ' + fam.map(k => FAMILY[k][4].replace(/ \(.*\)/, '')).join(', ') + '와(과) 저입니다.')
+    ? sentence([W.wo, W.jia, W.you, numWord(n, true), W.kou, W.ren, '，', ...famItems, W.he, W.wo, '。'], '저희 가족은 ' + n + '명입니다. ' + fam.map(k => FAMILY[k][4].replace(/ \(.*\)/, '')).join(', ') + '와(과) 저입니다.')
     : null;
   let a4;
   if (me.job === 'study') {
@@ -136,12 +136,12 @@ function answers(){
 
 /* ===== 문제 ===== */
 const QS = [
-  {id:'q1', topic:'이름', q:sentence([W.ni, W.jiao, '/', W.shenme, W.mingzi, '？'], '당신의 이름은 무엇입니까?'), words:['ni','jiao','shenme','mingzi'],
+  {id:'q1', topic:'이름', q:sentence([W.ni, W.jiao, W.shenme, W.mingzi, '？'], '당신의 이름은 무엇입니까?'), words:['ni','jiao','shenme','mingzi'],
    tip:'叫 jiào 뒤에 이름만 바꿔 넣으면 돼요. 질문의 你 nǐ → 답의 我 wǒ로 바꿔요.', more:[['我的名字 / 叫___。','Wǒ de míngzi / jiào ___.','제 이름은 ___입니다. (조금 더 긴 답)']]},
   {id:'q2', topic:'생년월일', q:sentence([W.qing, W.shuochu, '/', W.ni, W.de, W.chusheng, W.nian, W.yue, W.ri, '。'], '당신의 생년월일을 말해 보세요.'), words:['qing','shuochu','de','chusheng','nian','yue','ri','shengri','hao'],
-   tip:'연도는 숫자를 하나씩 읽어요: 1991 → yī jiǔ jiǔ yī nián. 말할 때 날짜는 日 rì보다 号 hào를 써요.', more:[['我是 / ___年___月___号 / 出生的。','Wǒ shì / ___ nián ___ yuè ___ hào / chūshēng de.','저는 ___년 ___월 ___일에 태어났어요.']]},
-  {id:'q3', topic:'가족 수', q:sentence([W.ni, W.jia, '/', W.you, W.ji, W.kou, W.ren, '？'], '당신의 가족은 몇 명입니까?'), words:['jia','you','ji','kou','ren','he'],
-   tip:'2명은 èr이 아니라 两 liǎng이에요. 가족 수는 口 kǒu로 세고, 마지막은 和我 hé wǒ(~와 저)로 끝내요.', more:[['我家 / 有三口人，爸爸、妈妈和我。','Wǒ jiā / yǒu sān kǒu rén, bàba, māma hé wǒ.','저희 가족은 3명입니다. 아빠, 엄마와 저입니다.']]},
+   tip:'연도는 숫자를 하나씩 읽어요: 1991 → yī jiǔ jiǔ yī nián. 말할 때 날짜는 日 rì보다 号 hào를 써요.', more:[['我是___年___月___号 / 出生的。','Wǒ shì ___ nián ___ yuè ___ hào / chūshēng de.','저는 ___년 ___월 ___일에 태어났어요.']]},
+  {id:'q3', topic:'가족 수', q:sentence([W.ni, W.jia, W.you, W.ji, W.kou, W.ren, '？'], '당신의 가족은 몇 명입니까?'), words:['jia','you','ji','kou','ren','he'],
+   tip:'2명은 èr이 아니라 两 liǎng이에요. 가족 수는 口 kǒu로 세고, 마지막은 和我 hé wǒ(~와 저)로 끝내요.', more:[['我家有三口人，爸爸、妈妈和我。','Wǒ jiā yǒu sān kǒu rén, bàba, māma hé wǒ.','저희 가족은 3명입니다. 아빠, 엄마와 저입니다.']]},
   {id:'q4', topic:'직장·학교', q:sentence([W.ni, W.zai, W.shenme, W.difang, '/', W.gongzuo, '？', W.huozhe, '/', W.ni, W.zai, W.nage, W.xuexiao, '/', W.shangxue, '？'], '당신은 어디에서 일합니까? 혹은 어느 학교에 다닙니까?'), words:['zai','difang','gongzuo','huozhe','nage','xuexiao','shangxue','gongsi','bu'],
    tip:'在 zài + 장소 + 동작 순서예요. 직장인은 工作 gōngzuò(일하다), 학생은 上学 shàngxué(학교에 다니다)로 답해요.', more:[['我在首尔大学 / 上学。','Wǒ zài Shǒu\'ěr Dàxué / shàngxué.','저는 서울대학교에 다녀요. (학생)'],['我在三星公司 / 工作。','Wǒ zài Sānxīng gōngsī / gōngzuò.','저는 삼성에서 일해요. (부서 없이)']]},
 ];
