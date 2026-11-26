@@ -11,7 +11,7 @@
 <body>
 <main class="wrap">
   <section class="hero">
-    <div class="eyebrow">TSC · 中国语口语考试</div>
+    <div class="eyebrow">목표 TSC 3급</div>
     <h1>TSC 중국어 말하기<br>파트별 연습</h1>
     <p>보고 → 말해 보고 → 확인하기. 듣기, 시험 타이머, 녹음까지 한 곳에서.</p>
   </section>
@@ -45,7 +45,7 @@ const PARTS = [
 const sum = T.load('tsc-summary', {});
 $('#parts').innerHTML = PARTS.map(([n, ko, zh, q, prep, ans, href]) => {
   const s = sum['p' + n], pct = s ? Math.round(s.done / s.total * 100) : 0;
-  const inner = '<span class="num">PART ' + n + '</span><span class="name">' + ko + '</span><span class="zhname">' + zh + '</span>' +
+  const inner = '<span class="num">PART ' + n + '</span><span class="name">' + ko + '</span>' +
     '<span class="meta"><span class="badge">' + q + '</span><span class="badge accent">' + prep + '</span><span class="badge accent">' + ans + '</span></span>' +
     (href ? '<span class="row small muted" style="margin-top:6px"><span>' + (s ? '진도 ' + pct + '% · ' + s.done + '/' + s.total : '아직 시작 전') + '</span></span><span class="progress"><i style="width:' + pct + '%"></i></span>' : '<span class="small muted" style="margin-top:6px">준비 중</span>');
   return href ? '<a class="part" href="' + href + '">' + inner + '</a>' : '<div class="part soon">' + inner + '</div>';

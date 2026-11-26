@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>TSC 1부분 자기소개</title>
-<meta name="description" content="TSC 1부분 自我介绍 — 질문 이해, 내 답변 만들기, 단어, 실전 연습">
+<meta name="description" content="TSC 1부분 자기소개 — 질문 이해, 내 답변 만들기, 단어, 실전 연습">
 <link rel="stylesheet" href="../assets/app.css">
 <script src="../assets/app.js"></script>
 </head>
 <body class="has-bottom">
 <main class="wrap">
   <section class="hero">
-    <div class="eyebrow">第一部分 · 自我介绍</div>
+    <div class="eyebrow">TSC PART 1</div>
     <h1>1부분 자기소개</h1>
     <p>4문항 · 준비 0초 · 답변 10초. 내 정보로 답변을 만들고, 듣고 따라 말해 보세요.</p>
   </section>
@@ -107,19 +107,22 @@ function sentence(items, ko){
 }
 
 /* ===== 내 정보 ===== */
-const DEFAULT_ME = {name:{hz:'李明', py:'Lǐ Míng', hg:'리 밍', ko:'이명'}, y:1995, m:8, d:18, family:['airen'], job:'work', company:'samsung', co:{hz:'', py:'', hg:'', ko:''}, dept:'jishu', school:{hz:'首尔大学', py:'Shǒu\'ěr Dàxué', hg:'서우 얼 다 쉬에', ko:'서울대학교'}};
+const josa = (word, a, b) => { const c = (word || '').trim().slice(-1).charCodeAt(0) - 0xAC00; return c >= 0 && c <= 11171 && c % 28 ? a : b; };
+const DEFAULT_ME = {name:{hz:'孙智舒', py:'Sūn Zhìshū', hg:'쑤언 즈 슈', ko:'손지서'}, y:1991, m:6, d:7, family:['airen'], job:'work', company:'samsung', co:{hz:'', py:'', hg:'', ko:''}, dept:'jishu', school:{hz:'首尔大学', py:'Shǒu\'ěr Dàxué', hg:'서우 얼 다 쉬에', ko:'서울대학교'}};
 let me = Object.assign(structuredClone(DEFAULT_ME), T.load('tsc-p1-me', {}));
+/* 예전 기본값(李明·1995)이 저장돼 있으면 새 기본값으로 */
+if (me.name && me.name.hz === '李明') { me.name = structuredClone(DEFAULT_ME.name); me.y = 1991; me.m = 6; me.d = 7; }
 const saveMe = () => T.save('tsc-p1-me', me);
 
 function answers(){
   const nm = customWord(me.name.hz, me.name.py, me.name.hg);
-  const a1 = sentence([W.wo, W.jiao, nm, '。'], '저는 ' + (me.name.ko || me.name.hz) + '(이)라고 합니다.');
+  const a1 = sentence([W.wo, W.jiao, nm, '。'], '저는 ' + (me.name.ko || me.name.py) + josa(me.name.ko || me.name.py, '이라고', '라고') + ' 합니다.');
   const a2 = sentence([W.wo, W.de, W.shengri, W.shi, '/', ...yearWords(me.y), W.nian, '/', numWord(me.m), W.yue, numWord(me.d), W.hao, '。'], '제 생일은 ' + me.y + '년 ' + me.m + '월 ' + me.d + '일입니다.');
   const fam = FAMILY_ORDER.filter(k => me.family.includes(k));
   const n = fam.length + 1;
   const famItems = []; fam.forEach((k, i) => { if (i) famItems.push('、'); famItems.push(FAMILY[k]); });
   const a3 = fam.length
-    ? sentence([W.wo, W.jia, W.you, numWord(n, true), W.kou, W.ren, '，', ...famItems, W.he, W.wo, '。'], '저희 가족은 ' + n + '명입니다. ' + fam.map(k => FAMILY[k][4].replace(/ \(.*\)/, '')).join(', ') + '와(과) 저입니다.')
+    ? sentence([W.wo, W.jia, W.you, numWord(n, true), W.kou, W.ren, '，', ...famItems, W.he, W.wo, '。'], '저희 가족은 ' + n + '명입니다. ' + (f => f + josa(f, '과', '와'))(fam.map(k => FAMILY[k][4].replace(/ \(.*\)/, '')).join(', ')) + ' 저입니다.')
     : null;
   let a4;
   if (me.job === 'study') {
@@ -137,13 +140,13 @@ function answers(){
 /* ===== 문제 ===== */
 const QS = [
   {id:'q1', topic:'이름', q:sentence([W.ni, W.jiao, W.shenme, W.mingzi, '？'], '당신의 이름은 무엇입니까?'), words:['ni','jiao','shenme','mingzi'],
-   tip:'叫 jiào 뒤에 이름만 바꿔 넣으면 돼요. 질문의 你 nǐ → 답의 我 wǒ로 바꿔요.', more:[['我的名字 / 叫___。','Wǒ de míngzi / jiào ___.','제 이름은 ___입니다. (조금 더 긴 답)']]},
+   tip:'jiào(~라고 부르다) 뒤에 이름만 넣으면 돼요. 질문의 nǐ(너)를 답에서는 wǒ(나)로 바꿔요.', more:[['我的名字 / 叫___。','Wǒ de míngzi / jiào ___.','제 이름은 ___입니다. (조금 더 긴 답)']]},
   {id:'q2', topic:'생년월일', q:sentence([W.qing, W.shuochu, '/', W.ni, W.de, W.chusheng, W.nian, W.yue, W.ri, '。'], '당신의 생년월일을 말해 보세요.'), words:['qing','shuochu','de','chusheng','nian','yue','ri','shengri','hao'],
-   tip:'연도는 숫자를 하나씩 읽어요: 1991 → yī jiǔ jiǔ yī nián. 말할 때 날짜는 日 rì보다 号 hào를 써요.', more:[['我是___年___月___号 / 出生的。','Wǒ shì ___ nián ___ yuè ___ hào / chūshēng de.','저는 ___년 ___월 ___일에 태어났어요.']]},
+   tip:'연도는 숫자를 하나씩 읽어요: 1991 → yī jiǔ jiǔ yī nián. 말할 때 날짜는 rì보다 hào를 써요.', more:[['我是___年___月___号 / 出生的。','Wǒ shì ___ nián ___ yuè ___ hào / chūshēng de.','저는 ___년 ___월 ___일에 태어났어요.']]},
   {id:'q3', topic:'가족 수', q:sentence([W.ni, W.jia, W.you, W.ji, W.kou, W.ren, '？'], '당신의 가족은 몇 명입니까?'), words:['jia','you','ji','kou','ren','he'],
-   tip:'2명은 èr이 아니라 两 liǎng이에요. 가족 수는 口 kǒu로 세고, 마지막은 和我 hé wǒ(~와 저)로 끝내요.', more:[['我家有三口人，爸爸、妈妈和我。','Wǒ jiā yǒu sān kǒu rén, bàba, māma hé wǒ.','저희 가족은 3명입니다. 아빠, 엄마와 저입니다.']]},
+   tip:'2명은 èr이 아니라 liǎng이에요. 가족 수는 kǒu로 세고, 마지막은 hé wǒ(~와 저)로 끝내요.', more:[['我家有三口人，爸爸、妈妈和我。','Wǒ jiā yǒu sān kǒu rén, bàba, māma hé wǒ.','저희 가족은 3명입니다. 아빠, 엄마와 저입니다.']]},
   {id:'q4', topic:'직장·학교', q:sentence([W.ni, W.zai, W.shenme, W.difang, '/', W.gongzuo, '？', W.huozhe, '/', W.ni, W.zai, W.nage, W.xuexiao, '/', W.shangxue, '？'], '당신은 어디에서 일합니까? 혹은 어느 학교에 다닙니까?'), words:['zai','difang','gongzuo','huozhe','nage','xuexiao','shangxue','gongsi','bu'],
-   tip:'在 zài + 장소 + 동작 순서예요. 직장인은 工作 gōngzuò(일하다), 학생은 上学 shàngxué(학교에 다니다)로 답해요.', more:[['我在首尔大学 / 上学。','Wǒ zài Shǒu\'ěr Dàxué / shàngxué.','저는 서울대학교에 다녀요. (학생)'],['我在三星公司 / 工作。','Wǒ zài Sānxīng gōngsī / gōngzuò.','저는 삼성에서 일해요. (부서 없이)']]},
+   tip:'zài + 장소 + 동작 순서예요. 직장인은 gōngzuò(일하다), 학생은 shàngxué(학교에 다니다)로 답해요.', more:[['我在首尔大学 / 上学。','Wǒ zài Shǒu\'ěr Dàxué / shàngxué.','저는 서울대학교에 다녀요. (학생)'],['我在三星公司 / 工作。','Wǒ zài Sānxīng gōngsī / gōngzuò.','저는 삼성에서 일해요. (부서 없이)']]},
 ];
 
 const prog = T.progress('p1');
@@ -156,7 +159,7 @@ function summary(){
 
 /* ===== 공통 조각 ===== */
 const hgTones = w => w[2].split(/[| ]+/).filter(Boolean).map((c, i) => [c, w[3] ? w[3][i] || 0 : 0]);
-const wordBtn = w => '<button class="word" type="button" data-speak="' + esc(w[0]) + '"><div class="w-hz">' + esc(w[0]) + '</div><div class="w-py">' + esc(T.pinyinWithExpanded(w[1])) + '</div><div class="w-ko"><span class="hgw">' + T.toneHTML(w[2].replaceAll('|',''), hgTones(w)) + '</span> · ' + esc(w[4]) + '</div></button>';
+const wordBtn = w => T.wordHTML(w);
 
 /* ===== 화면: 학습 ===== */
 function viewLearn(){
@@ -166,8 +169,8 @@ function viewLearn(){
   QS.forEach((q, i) => {
     const a = A[i], on = prog.has(q.id);
     h += '<article class="card' + (on ? ' done' : '') + '" data-q="' + q.id + '">' +
-      '<div class="card-head"><span class="badge">问题 ' + (i + 1) + '</span><span class="label">' + q.topic + '</span>' + T.doneBtn(on) + '</div>' +
-      '<div class="say"><div class="line hz">' + q.q.hzHTML + '</div><div class="line hg">' + T.toneHTML(q.q.hg, q.q.tones) + '</div></div>' +
+      '<div class="card-head"><span class="badge">문제 ' + (i + 1) + '</span><span class="label">' + q.topic + '</span>' + T.doneBtn(on) + '</div>' +
+      T.sayHTML(q.q) +
       '<p class="muted" style="margin:6px 0 10px">' + esc(q.q.ko) + '</p>' +
       '<div class="row">' + T.speakBtn(q.q.hz, '질문 듣기') + '</div>' +
       '<details class="more"><summary>단어 풀이 (' + q.words.length + ')</summary><div class="words">' + q.words.map(k => wordBtn(W[k])).join('') + '</div></details>' +
@@ -186,25 +189,24 @@ function viewLearn(){
 function viewMe(){
   const opt = (v, cur, label) => '<option value="' + v + '"' + (String(v) === String(cur) ? ' selected' : '') + '>' + esc(label) + '</option>';
   const range = (a, b) => Array.from({length: b - a + 1}, (_, i) => a + i);
-  const cw = (key, title, ex) => '<div class="grid2"><label class="field"><span>' + title + ' 한자</span><input class="input zh" data-k="' + key + '.hz" value="' + esc(me[key].hz) + '" placeholder="' + ex[0] + '"></label>' +
-    '<label class="field"><span>한국어</span><input class="input" data-k="' + key + '.ko" value="' + esc(me[key].ko) + '" placeholder="' + ex[3] + '"></label></div>' +
+  const cw = (key, title, ex) => '<label class="field"><span>' + title + ' (한국어)</span><input class="input" data-k="' + key + '.ko" value="' + esc(me[key].ko) + '" placeholder="' + ex[3] + '"></label>' +
     '<div class="grid2"><label class="field"><span>병음 (숫자 성조 가능: ' + ex[4] + ')</span><input class="input" data-k="' + key + '.py" value="' + esc(me[key].py) + '" placeholder="' + ex[1] + '" autocapitalize="off" spellcheck="false"></label>' +
     '<label class="field"><span>한글 발음 (음절마다 띄어 쓰기)</span><input class="input" data-k="' + key + '.hg" value="' + esc(me[key].hg) + '" placeholder="' + ex[2] + '"></label></div><p class="small muted" data-warn="' + key + '"></p>';
   view.innerHTML =
     '<div class="card"><h3 style="margin-top:0">✏️ 내 답변 만들기</h3><p class="small muted" style="margin:0">입력하면 ‘학습’과 ‘실전’의 모범 답변이 바로 바뀌어요. 이 기기에만 저장돼요.</p></div>' +
-    '<div class="card"><div class="card-head"><span class="badge">问题 1</span><span class="label">이름</span></div>' + cw('name', '이름', ['李明','Lǐ Míng','리 밍','이명','li3 ming2']) + '<div id="pv1"></div></div>' +
-    '<div class="card"><div class="card-head"><span class="badge">问题 2</span><span class="label">생년월일</span></div><div class="grid3">' +
+    '<div class="card"><div class="card-head"><span class="badge">문제 1</span><span class="label">이름</span></div>' + cw('name', '이름', ['','Sūn Zhìshū','쑤언 즈 슈','손지서','sun1 zhi4 shu1']) + '<div id="pv1"></div></div>' +
+    '<div class="card"><div class="card-head"><span class="badge">문제 2</span><span class="label">생년월일</span></div><div class="grid3">' +
       '<label class="field"><span>년</span><select class="input" data-k="y">' + range(1950, 2015).reverse().map(y => opt(y, me.y, y + '년')).join('') + '</select></label>' +
       '<label class="field"><span>월</span><select class="input" data-k="m">' + range(1, 12).map(m => opt(m, me.m, m + '월')).join('') + '</select></label>' +
       '<label class="field"><span>일</span><select class="input" data-k="d">' + range(1, 31).map(d => opt(d, me.d, d + '일')).join('') + '</select></label></div><div id="pv2"></div></div>' +
-    '<div class="card"><div class="card-head"><span class="badge">问题 3</span><span class="label">가족 (나 제외, 함께 사는 가족)</span></div><div class="row">' +
-      FAMILY_ORDER.map(k => '<label class="check"><input type="checkbox" data-fam="' + k + '"' + (me.family.includes(k) ? ' checked' : '') + '> <span class="zh">' + FAMILY[k][0] + '</span> ' + esc(FAMILY[k][4].replace(/ \(.*\)/, '')) + '</label>').join('') + '</div><div id="pv3"></div></div>' +
-    '<div class="card"><div class="card-head"><span class="badge">问题 4</span><span class="label">직장·학교</span></div>' +
+    '<div class="card"><div class="card-head"><span class="badge">문제 3</span><span class="label">가족 (나 제외, 함께 사는 가족)</span></div><div class="row">' +
+      FAMILY_ORDER.map(k => '<label class="check"><input type="checkbox" data-fam="' + k + '"' + (me.family.includes(k) ? ' checked' : '') + '> ' + esc(FAMILY[k][4].replace(/ \(.*\)/, '')) + '</label>').join('') + '</div><div id="pv3"></div></div>' +
+    '<div class="card"><div class="card-head"><span class="badge">문제 4</span><span class="label">직장·학교</span></div>' +
       '<div class="row" style="margin-bottom:6px"><label class="check"><input type="radio" name="job" value="work"' + (me.job !== 'study' ? ' checked' : '') + '> 직장인</label><label class="check"><input type="radio" name="job" value="study"' + (me.job === 'study' ? ' checked' : '') + '> 학생</label></div>' +
-      (me.job === 'study' ? cw('school', '학교', ['首尔大学','Shǒu\'ěr Dàxué','서우 얼 다 쉬에','서울대학교','shou3 er3 da4 xue2'])
-        : '<div class="grid2"><label class="field"><span>회사</span><select class="input" data-k="company">' + Object.entries(COMPANIES).map(([k, c]) => opt(k, me.company, c[4] + ' ' + c[0])).join('') + opt('custom', me.company, '직접 입력') + '</select></label>' +
-          '<label class="field"><span>부서</span><select class="input" data-k="dept">' + Object.entries(DEPTS).map(([k, d]) => opt(k, me.dept, d ? d[4] + ' ' + d[0] : '부서 말하지 않기')).join('') + '</select></label></div>' +
-          (me.company === 'custom' ? cw('co', '회사', ['乐金','Lèjīn','러 진','LG','le4 jin1']) : '')) +
+      (me.job === 'study' ? cw('school', '학교', ['','Shǒu\'ěr Dàxué','서우 얼 다 쉬에','서울대학교','shou3 er3 da4 xue2'])
+        : '<div class="grid2"><label class="field"><span>회사</span><select class="input" data-k="company">' + Object.entries(COMPANIES).map(([k, c]) => opt(k, me.company, c[4] + ' · ' + c[1])).join('') + opt('custom', me.company, '직접 입력') + '</select></label>' +
+          '<label class="field"><span>부서</span><select class="input" data-k="dept">' + Object.entries(DEPTS).map(([k, d]) => opt(k, me.dept, d ? d[4] + ' · ' + d[1] : '부서 말하지 않기')).join('') + '</select></label></div>' +
+          (me.company === 'custom' ? cw('co', '회사', ['','Lèjīn','러 진','LG','le4 jin1']) : '')) +
       '<div id="pv4"></div></div>' +
     '<div class="row end"><button class="btn ghost" type="button" id="reset">기본값으로 되돌리기</button><button class="btn primary" type="button" data-go="learn">학습하러 가기 →</button></div>';
   const preview = () => {
@@ -215,7 +217,7 @@ function viewMe(){
   preview();
   view.oninput = view.onchange = e => {
     const el = e.target;
-    if (el.dataset.k) { const [a, b] = el.dataset.k.split('.'); if (b) me[a][b] = el.value; else me[a] = el.tagName === 'SELECT' && /^[ymd]$/.test(a) ? +el.value : el.value; }
+    if (el.dataset.k) { const [a, b] = el.dataset.k.split('.'); if (b) { me[a][b] = el.value; if (b === 'py') me[a].hz = ''; } else me[a] = el.tagName === 'SELECT' && /^[ymd]$/.test(a) ? +el.value : el.value; }
     if (el.dataset.fam) { me.family = FAMILY_ORDER.filter(k => $('[data-fam="' + k + '"]').checked); }
     if (el.name === 'job') { me.job = el.value; saveMe(); viewMe(); return; }
     if (el.dataset.k === 'company' && e.type === 'change') { saveMe(); viewMe(); return; }
@@ -243,7 +245,7 @@ function viewWords(){
       const [id, w] = ALL_WORDS.find(x => x[0] === deck[dpos]);
       h += '<div class="small muted">' + (dpos + 1) + ' / ' + deck.length + '</div><div class="progress" style="margin:6px 0"><i style="width:' + (dpos / deck.length * 100) + '%"></i></div>' +
         '<div class="flash" id="flash"><button class="inner" type="button" aria-label="카드 뒤집기"><div class="face"><div class="small muted">중국어로 말해 보세요</div><div class="big-ko">' + esc(w[4]) + '</div><div class="small muted">눌러서 뒤집기</div></div>' +
-        '<div class="face back"><div class="big-zh">' + esc(w[0]) + '</div><div class="say"><div class="line py">' + esc(T.pinyinWithExpanded(w[1])) + '</div><div class="line hg">' + T.toneHTML(w[2].replaceAll('|', ''), hgTones(w)) + '</div></div><div class="small muted">' + esc(w[4]) + '</div></div></button></div>' +
+        '<div class="face back"><div class="say"><div class="line py" style="font-size:28px">' + esc(T.pinyinWithExpanded(w[1])) + '</div><div class="line hg">' + T.toneHTML(w[2].replaceAll('|', ''), hgTones(w)) + '</div></div><div class="small muted">' + esc(w[4]) + '</div></div></button></div>' +
         '<div class="row" style="justify-content:center">' + T.speakBtn(w[0], '듣기') + '<button class="btn" type="button" id="no">🔁 다시 볼래요</button><button class="btn good" type="button" id="yes">' + T.icon.check + '알아요</button></div>';
     }
   }
@@ -279,8 +281,8 @@ async function runExam(){
   let cancelled = false, cd = null;
   for (let i = 0; i < QS.length && !cancelled; i++) {
     const q = QS[i];
-    view.innerHTML = '<div class="card center"><div class="card-head"><span class="badge">问题 ' + (i + 1) + ' / 4</span><span class="label"></span><button class="btn ghost" type="button" id="quit">그만하기</button></div>' +
-      (exam.showText ? '<div class="say"><div class="line hz">' + q.q.hzHTML + '</div></div>' : '<p class="muted">🎧 잘 듣고 답하세요</p>') +
+    view.innerHTML = '<div class="card center"><div class="card-head"><span class="badge">문제 ' + (i + 1) + ' / 4</span><span class="label"></span><button class="btn ghost" type="button" id="quit">그만하기</button></div>' +
+      (exam.showText ? T.sayHTML({py: q.q.py}) : '<p class="muted">🎧 잘 듣고 답하세요</p>') +
       '<div id="tm"><p class="muted" style="margin:40px 0">🔊 질문을 듣는 중…</p></div><p id="recstate" class="small muted"></p></div>';
     $('#quit').onclick = () => { cancelled = true; T.stopSpeak(); cd && cd.cancel(); rec && rec.cancel(); };
     const spoke = await T.speak(q.q.hz, {rate: 0.9});
@@ -302,8 +304,8 @@ async function runExam(){
 }
 function resultsHTML(){
   return '<h2>결과 확인</h2><p class="small muted">모범 답변과 비교하고, 잘 말한 문항은 ‘외웠어요’로 표시하세요.</p>' + exam.results.map(({q, a, url}, i) =>
-    '<article class="card" data-q="' + q.id + '"><div class="card-head"><span class="badge">问题 ' + (i + 1) + '</span><span class="label">' + q.topic + '</span>' + T.doneBtn(prog.has(q.id)) + '</div>' +
-    '<div class="say"><div class="line hz">' + q.q.hzHTML + '</div></div>' +
+    '<article class="card" data-q="' + q.id + '"><div class="card-head"><span class="badge">문제 ' + (i + 1) + '</span><span class="label">' + q.topic + '</span>' + T.doneBtn(prog.has(q.id)) + '</div>' +
+    T.sayHTML({py: q.q.py}) +
     (url ? '<p class="small muted" style="margin:8px 0 2px">내 답변 녹음</p><audio controls src="' + url + '" style="width:100%"></audio>' : '') +
     (a ? '<p class="small muted" style="margin:8px 0 2px">모범 답변</p>' + T.revealHTML(T.sayHTML(a), true) + '<div class="row" style="margin-top:6px">' + T.speakBtn(a.hz, '모범 답변 듣기') + '</div>' : '') + '</article>').join('');
 }

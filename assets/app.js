@@ -148,7 +148,7 @@ T.sentence = (items, ko) => {
   return {hz: hz.join(''), hzHTML: hzHTML.join(''), py: pyText, hg: hgText.replace(/^ /, '').replace(/ \/ ?/g, ' / ').replace(/\s+/g, ' ').trim(), tones, ko};
 };
 T.hgTones = w => w[2].split(/[| ]+/).filter(Boolean).map((c, i) => [c, w[3] ? w[3][i] || 0 : 0]);
-T.wordHTML = w => '<button class="word" type="button" data-speak="' + esc(w[0]) + '"><div class="w-hz">' + esc(w[0]) + '</div><div class="w-py">' + esc(T.pinyinWithExpanded(w[1])) + '</div><div class="w-ko"><span class="hgw">' + T.toneHTML(w[2].replaceAll('|', ''), T.hgTones(w)) + '</span> · ' + esc(w[4]) + '</div></button>';
+T.wordHTML = w => '<button class="word" type="button" data-speak="' + esc(w[0]) + '"><div class="w-py">' + esc(T.pinyinWithExpanded(w[1])) + '</div><div class="w-ko"><span class="hgw">' + T.toneHTML(w[2].replaceAll('|', ''), T.hgTones(w)) + '</span> · ' + esc(w[4]) + '</div></button>';
 
 /* ---------- 문장 렌더 ---------- */
 /* row: {hz, py, hg, tones:[[소리,성조],...], ko} */
@@ -156,7 +156,7 @@ T.wordHTML = w => '<button class="word" type="button" data-speak="' + esc(w[0]) 
 T.brk = html => html.replaceAll(' / ', ' <span class="brk" aria-hidden="true">/ </span>');
 T.sayHTML = (row, opt = {}) => {
   const lines = [];
-  if (row.hz) lines.push('<div class="line hz" lang="zh-CN">' + (row.hzHTML || esc(row.hz).replaceAll(' / ', '<span class="brk" aria-hidden="true">/</span>')) + '</div>');
+  /* 한자는 화면에 보이지 않음 (듣기용으로만 사용) */
   if (row.py) lines.push('<div class="line py" lang="zh-Latn-pinyin">' + T.brk(esc(opt.noExpand ? row.py : T.pinyinWithExpanded(row.py))) + '</div>');
   if (row.hg) lines.push('<div class="line hg">' + T.brk(row.tones ? T.toneHTML(row.hg, row.tones) : esc(row.hg)) + '</div>');
   return '<div class="say">' + lines.join('') + '</div>';
@@ -272,7 +272,7 @@ T.topbar = ({title, sub, home = '../'}) => {
   const tg = (k, label, hint) => '<label class="toggle"><span>' + label + (hint ? '<br><span class="small muted">' + hint + '</span>' : '') + '</span><input type="checkbox" data-set="' + k + '"' + (settings[k] ? ' checked' : '') + '></label>';
   sheet.innerHTML = '<div class="panel"><div class="row"><h3 style="margin:0">보기 설정</h3><span class="spacer"></span><button class="btn ghost" type="button" data-close>닫기</button></div>' +
     tg('cover', '답을 가리고 시작', '눌러야 중국어가 보여요. 스스로 말해 본 뒤 확인하세요.') +
-    tg('hz', '한자 보기') + tg('py', '병음 보기') + tg('brk', '끊어 읽기 표시', '/ 표시에서 잠깐 쉬어 읽어요.') + tg('hg', '한글 발음 보기', '한글 위의 선이 성조예요. ─1성 ／2성 ⌄3성 ＼4성') +
+    tg('py', '병음 보기') + tg('brk', '끊어 읽기 표시', '/ 표시에서 잠깐 쉬어 읽어요.') + tg('hg', '한글 발음 보기', '한글 위의 선이 성조예요. ─1성 ／2성 ⌄3성 ＼4성') +
     '<div class="toggle"><span>화면 테마</span><span class="seg" data-theme-seg>' + [['auto','자동'],['light','밝게'],['dark','어둡게']].map(([v, l]) => '<button type="button" data-v="' + v + '" aria-pressed="' + (settings.theme === v) + '">' + l + '</button>').join('') + '</span></div>' +
     '<div class="toggle"><span>듣기 속도</span><span class="seg" data-rate-seg>' + [[0.6,'천천히'],[0.8,'보통'],[1,'빠르게']].map(([v, l]) => '<button type="button" data-v="' + v + '" aria-pressed="' + (settings.rate === v) + '">' + l + '</button>').join('') + '</span></div>' +
     '</div>';
