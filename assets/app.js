@@ -38,13 +38,25 @@ T.progress = part => {
 /* ---------- 성조 ---------- */
 const tonePaths = T.tonePaths = ['', 'M5 12H95', 'M5 88L95 12', 'M5 30L45 90L95 55', 'M5 12L95 88'];
 /* hangul: "니 쟈오", parts: [["니",3],["쟈오",4]] → 성조선이 겹쳐진 HTML */
+/* b·d·g·j·z·zh 소리: 1·4성은 된소리(ㅃㄸㄲㅉ), 2·3성·경성은 예사소리(ㅂㄷㄱㅈ) */
+const LAX_TENSE = [[0, 1], [3, 4], [7, 8], [12, 13]];
+T.tenseByTone = (sound, tone) => {
+  const c = sound.charCodeAt(0) - 0xAC00;
+  if (c < 0 || c > 11171) return sound;
+  const cho = Math.floor(c / 588), rest = c % 588;
+  const pair = LAX_TENSE.find(p => p.includes(cho));
+  if (!pair) return sound;
+  const want = (tone === 1 || tone === 4) ? pair[1] : pair[0];
+  return String.fromCharCode(0xAC00 + want * 588 + rest) + sound.slice(1);
+};
 T.toneHTML = (hangul, parts) => {
   let off = 0;
-  return parts.map(([sound, tone]) => {
-    const start = hangul.indexOf(sound, off);
+  return parts.map(([sound0, tone]) => {
+    const start = hangul.indexOf(sound0, off);
     if (start < 0) return '';
     const gap = hangul.slice(off, start);
-    off = start + sound.length;
+    off = start + sound0.length;
+    const sound = T.tenseByTone(sound0, tone);
     const line = tone ? '<svg aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="' + tonePaths[tone] + '"/></svg>' : '';
     return esc(gap) + '<span class="tone" data-t="' + tone + '">' + esc(sound) + line + '</span>';
   }).join('') + esc(hangul.slice(off));
