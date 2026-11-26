@@ -25,7 +25,8 @@ T.setSetting = (k, v) => { settings[k] = v; T.save('tsc-settings', settings); T.
 T.applySettings();
 
 /* ---------- 진도 ---------- */
-T.progress = part => {
+const PROG = {};
+T.progress = part => PROG[part] || (PROG[part] = (() => {
   const key = 'tsc-progress-' + part;
   const data = T.load(key, {});
   return {
@@ -33,7 +34,10 @@ T.progress = part => {
     set(id, on){ if (on) data[id] = Date.now(); else delete data[id]; T.save(key, data); },
     count: ids => ids ? ids.filter(id => data[id]).length : Object.keys(data).length,
   };
-};
+})());
+/* 외웠어요(✓) / 틀렸어요(✗) — 'p1' 진도에 ✓, 'p1-x'에 ✗ 저장 */
+T.markState = (part, id) => T.progress(part).has(id) ? 'done' : T.progress(part + '-x').has(id) ? 'wrong' : '';
+T.setMark = (part, id, v) => { T.progress(part).set(id, v === 'done'); T.progress(part + '-x').set(id, v === 'wrong'); };
 
 /* ---------- 성조 ---------- */
 const tonePaths = T.tonePaths = ['', 'M5 12H95', 'M5 88L95 12', 'M5 30L45 90L95 55', 'M5 12L95 88'];
@@ -148,7 +152,10 @@ T.sentence = (items, ko) => {
   return {hz: hz.join(''), hzHTML: hzHTML.join(''), py: pyText, hg: hgText.replace(/^ /, '').replace(/ \/ ?/g, ' / ').replace(/\s+/g, ' ').trim(), tones, ko};
 };
 T.hgTones = w => { const t = w[3] ? T.sandhi(w[3]) : []; return w[2].split(/[| ]+/).filter(Boolean).map((c, i) => [c, t[i] || 0]); };
-T.wordHTML = w => '<div class="word"><div class="w-py">' + esc(T.pinyinWithExpanded(w[1])) + '</div><div class="w-ko"><span class="hgw">' + T.toneHTML(w[2].replaceAll('|', ''), T.hgTones(w)) + '</span> · ' + esc(w[4]) + '</div></div>';
+/* 단어 정보 {py, hg, parts:[[소리,성조]], ko} */
+T.wordInfo = w => ({py: w[1], hg: w[2].replaceAll('|', ''), parts: T.hgTones(w), ko: w[4]});
+T.wordChip = (info, extra = '') => '<div class="word" role="button" tabindex="0" data-w="' + esc(JSON.stringify(info)) + '"><div class="w-py">' + esc(T.pinyinWithExpanded(info.py)) + '</div><div class="w-ko"><span class="hgw">' + T.toneHTML(info.hg, info.parts) + '</span> · ' + esc(info.ko) + '</div>' + extra + '</div>';
+T.wordHTML = (w, extra) => T.wordChip(T.wordInfo(w), extra);
 
 /* ---------- 문장 렌더 ---------- */
 /* row: {hz, py, hg, tones:[[소리,성조],...], ko} */
@@ -204,10 +211,29 @@ const I = T.icon = {
   home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>',
   gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>',
   play:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 010 7M18.5 5.5a9 9 0 010 13"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>',
   check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>',
 };
 T.speakBtn = () => '';
-T.doneBtn = (on) => '<button class="btn ' + (on ? 'good' : '') + '" type="button" data-done aria-pressed="' + !!on + '">' + I.check + (on ? '외웠어요' : '외웠으면 체크') + '</button>';
+T.markBtns = (part, id) => { const st = T.markState(part, id);
+  return '<span class="marks" data-part="' + esc(part) + '" data-mid="' + esc(id) + '">' +
+    '<button class="mark ok" type="button" data-mark="done" aria-pressed="' + (st === 'done') + '" aria-label="외웠어요" title="외웠어요">' + I.check + '</button>' +
+    '<button class="mark no" type="button" data-mark="wrong" aria-pressed="' + (st === 'wrong') + '" aria-label="틀렸어요" title="틀렸어요">' + I.x + '</button></span>'; };
+/* 넘기는 카드·퀴즈용 큰 아이콘 버튼 */
+T.judgeBtns = () => '<div class="row" style="justify-content:center;gap:14px"><button class="judge no" type="button" id="no" aria-label="틀렸어요" title="틀렸어요">' + I.x + '</button><button class="judge ok" type="button" id="yes" aria-label="외웠어요" title="외웠어요">' + I.check + '</button></div>';
+T.onMark = null;
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-mark]'); if (!b) return;
+  e.stopPropagation();
+  const wrap = b.closest('.marks'), part = wrap.dataset.part, id = wrap.dataset.mid;
+  const v = T.markState(part, id) === b.dataset.mark ? '' : b.dataset.mark;
+  T.setMark(part, id, v);
+  const host = wrap.closest('.card, .word-wrap');
+  if (host) { host.classList.toggle('done', v === 'done'); host.classList.toggle('wrong', v === 'wrong'); }
+  wrap.outerHTML = T.markBtns(part, id);
+  T.onMark && T.onMark(part, id, v);
+}, true);
 
 /* ---------- 상단 바 + 설정 시트 ---------- */
 T.topbar = ({title, sub, home = '../'}) => {

@@ -196,3 +196,24 @@ img.photo{display:block;width:100%;border-radius:14px;margin-top:10px}
 .empty{padding:30px 10px;text-align:center;color:var(--muted)}
 .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:14px;font-weight:650;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.show{opacity:1}
+
+/* 외웠어요 ✓ / 틀렸어요 ✗ 아이콘 버튼 */
+.marks{display:inline-flex;gap:6px;flex:none}
+.mark{display:inline-grid;place-items:center;width:38px;height:38px;padding:0;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--muted)}
+.mark svg{width:18px;height:18px}
+.mark.ok[aria-pressed="true"]{background:var(--good);border-color:var(--good);color:#fff}
+.mark.no[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.card.wrong{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.judge{display:inline-grid;place-items:center;width:64px;height:64px;border-radius:50%;border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow)}
+.judge svg{width:28px;height:28px}
+.judge.ok{color:var(--good)}
+.judge.no{color:var(--accent)}
+.judge:active{transform:scale(.95)}
+/* 눌러서 자세히 보는 단어 */
+.word[data-w]{cursor:pointer;position:relative}
+.word[data-w]:hover{border-color:var(--brand)}
+.word .marks{position:absolute;top:6px;right:6px}
+.word .mark{width:30px;height:30px;border-radius:9px}
+.word .mark svg{width:15px;height:15px}
+.word:has(.marks){padding-right:76px}
+@media (max-width:520px){.words:has(.marks){grid-template-columns:1fr}}

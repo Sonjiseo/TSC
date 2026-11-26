@@ -7,6 +7,7 @@
 <meta name="description" content="TSC 2부분 그림 보고 답하기 — 교재 예제, 단어장, 문장 패턴, 부록, 실전 퀴즈">
 <link rel="stylesheet" href="../assets/app.css">
 <script src="../assets/app.js"></script>
+<script src="../assets/words.js"></script>
 <script src="data.js"></script>
 </head>
 <body class="has-bottom">
@@ -42,7 +43,7 @@ function summary(){ const s = T.load('tsc-summary', {}); s.p2 = {done: prog.coun
 
 /* ===== 조각 ===== */
 const sayRow = r => T.revealHTML(T.sayHTML(rowObj(r), {noExpand: true}));
-const glossHTML = k => { const w = D.gloss[k]; return w ? '<div class="word"><div class="w-py">' + esc(w[1]) + '</div><div class="w-ko"><span class="hgw">' + T.toneHTML(w[2], w[3]) + '</span> · ' + esc(w[0]) + '</div></div>' : ''; };
+const glossHTML = k => { const w = D.gloss[k]; return w ? T.wordChip({py: w[1], hg: w[2], parts: w[3], ko: w[0]}) : ''; };
 function studyNote(x){
   const n = D.notes[x[0][0] + x[1][0]]; if (!n) return '';
   const [title, grammar, tip] = D.rules[n[0]];
@@ -52,17 +53,15 @@ function studyNote(x){
 }
 const pairInner = x => '<p class="small muted" style="margin:4px 0 0">질문</p><p class="ko" style="margin:0">' + esc(x[0][0]) + '</p>' + sayRow(x[0]) +
   '<p class="small muted" style="margin:12px 0 0">답변</p><p class="ko" style="margin:0">' + esc(x[1][0]) + '</p>' + sayRow(x[1]) + studyNote(x);
-const pairCard = (x, id, label, extra = '') => '<article class="card' + (prog.has(id) ? ' done' : '') + '" data-id="' + id + '"><div class="card-head"><span class="badge">' + esc(label) + '</span><span class="label"></span>' + T.doneBtn(prog.has(id)) + '</div>' + extra + pairInner(x) + '</article>';
-function rowCard(r, id, note){
-  return '<div class="card' + (prog.has(id) ? ' done' : '') + '" data-id="' + id + '" style="padding:14px 16px;margin:8px 0"><div class="row"><span class="ko" style="flex:1">' + esc(r[0]) + '</span>' + T.doneBtn(prog.has(id)) + '</div>' + sayRow(r) +
+const pairCard = (x, id, label, extra = '') => '<article class="card' + (prog.has(id) ? ' done' : '') + '" data-id="' + id + '"><div class="card-head"><span class="badge">' + esc(label) + '</span><span class="label"></span>' + T.markBtns('p2', id) + '</div>' + extra + pairInner(x) + '</article>';
+function rowCard(r, id, note, word){
+  return '<div class="card' + (prog.has(id) ? ' done' : '') + '" data-id="' + id + '" style="padding:14px 16px;margin:8px 0"><div class="row"><span class="ko" style="flex:1">' + esc(r[0]) + '</span>' + (word ? '<button class="mark" type="button" aria-label="단어 자세히" title="단어 자세히" data-w="' + esc(JSON.stringify({py: r[1], hg: r[2], parts: r[3], ko: r[0]})) + '">' + T.icon.info + '</button>' : '') + T.markBtns('p2', id) + '</div>' + sayRow(r) +
     (note ? '<div class="tip"><b>TIP</b><span>' + esc(note) + '</span></div>' : '') + '</div>';
 }
-const progressCard = (ids, label) => { const d = prog.count(ids); return '<div class="card"><div class="row"><div class="stat"><b>' + d + '</b><span class="muted">/ ' + ids.length + ' ' + label + '</span></div><span class="spacer"></span><button class="btn soft" type="button" data-go="quiz">⏱ 실전 퀴즈</button></div><div class="progress" style="margin-top:10px"><i style="width:' + (d / ids.length * 100) + '%"></i></div></div>'; };
+let lastProg = null;
+const progressCard = (ids, label) => { lastProg = [ids, label]; const d = prog.count(ids); return '<div class="card" id="statcard"><div class="row"><div class="stat"><b>' + d + '</b><span class="muted">/ ' + ids.length + ' ' + label + '</span></div><span class="spacer"></span><button class="btn soft" type="button" data-go="quiz">⏱ 실전 퀴즈</button></div><div class="progress" style="margin-top:10px"><i style="width:' + (d / ids.length * 100) + '%"></i></div></div>'; };
 const chips = (items, cur, attr) => '<div class="chips">' + items.map(([v, l, n]) => '<button class="chip" type="button" ' + attr + '="' + v + '" aria-pressed="' + (String(v) === String(cur)) + '">' + esc(l) + (n != null ? '<span class="n">' + n + '</span>' : '') + '</button>').join('') + '</div>';
-function bindDone(rerender){
-  $$('[data-done]', view).forEach(b => b.onclick = () => { const id = b.closest('[data-id]').dataset.id; const on = !prog.has(id); prog.set(id, on); summary();
-    const card = b.closest('[data-id]'); card.classList.toggle('done', on); b.outerHTML = T.doneBtn(on); bindDone(rerender); rerender && rerender(); });
-}
+function bindDone(){}
 
 /* ===== 교재 예제 ===== */
 let page = T.load('tsc-p2-page', 0);
@@ -85,7 +84,7 @@ function viewVocab(){
   let h = progressCard(IDS.vocab, '단어 외움') +
     chips(D.v.map((g, t) => [t, g[0], prog.count(g[1].map((_, i) => 'v:' + t + ':' + i)) + '/' + g[1].length]), topic, 'data-topic') +
     '<div class="row"><span class="seg" id="vmode"><button type="button" data-v="list" aria-pressed="' + (vmode === 'list') + '">목록</button><button type="button" data-v="card" aria-pressed="' + (vmode === 'card') + '">카드 넘기기</button></span></div>';
-  if (vmode === 'list') h += rows.map((r, i) => rowCard(r, ids[i])).join('');
+  if (vmode === 'list') h += rows.map((r, i) => rowCard(r, ids[i], '', true)).join('');
   else {
     if (!deck.length || !deck.every(id => ids.includes(id))) { deck = ids.slice().sort(() => Math.random() - .5); dpos = 0; }
     if (dpos >= deck.length) h += '<div class="card center"><h3>한 바퀴 끝! 👏</h3><p class="muted">외운 단어 ' + prog.count(deck) + ' / ' + deck.length + '</p><button class="btn primary" type="button" id="again">다시 섞어서 시작</button></div>';
@@ -94,14 +93,14 @@ function viewVocab(){
       h += '<div class="small muted" style="margin-top:10px">' + (dpos + 1) + ' / ' + deck.length + '</div><div class="progress" style="margin:6px 0"><i style="width:' + (dpos / deck.length * 100) + '%"></i></div>' +
         '<div class="flash" id="flash"><button class="inner" type="button" aria-label="카드 뒤집기"><div class="face"><div class="small muted">중국어로 말해 보세요</div><div class="big-ko">' + esc(r[0]) + '</div><div class="small muted">눌러서 뒤집기</div></div>' +
         '<div class="face back"><div class="say"><div class="line py" style="font-size:26px">' + esc(r[1]) + '</div><div class="line hg" style="font-size:20px">' + T.toneHTML(r[2], r[3]) + '</div></div><div class="small muted">' + esc(r[0]) + '</div></div></button></div>' +
-        '<div class="row" style="justify-content:center"><button class="btn" type="button" id="no">🔁 다시 볼래요</button><button class="btn good" type="button" id="yes">' + T.icon.check + '알아요</button></div>';
+        T.judgeBtns();
     }
   }
   view.innerHTML = h;
   $$('[data-topic]', view).forEach(b => b.onclick = () => { topic = +b.dataset.topic; T.save('tsc-p2-topic', topic); deck = []; viewVocab(); });
   $('#vmode').onclick = e => { const b = e.target.closest('button'); if (b) { vmode = b.dataset.v; deck = []; viewVocab(); } };
   const fl = $('#flash'); if (fl) fl.querySelector('.inner').onclick = () => fl.classList.toggle('flipped');
-  const next = ok => { const id = deck[dpos]; prog.set(id, ok); if (!ok) deck.push(id); dpos++; summary(); viewVocab(); };
+  const next = ok => { const id = deck[dpos]; T.setMark('p2', id, ok ? 'done' : 'wrong'); if (!ok) deck.push(id); dpos++; summary(); viewVocab(); };
   $('#yes') && ($('#yes').onclick = () => next(true));
   $('#no') && ($('#no').onclick = () => next(false));
   $('#again') && ($('#again').onclick = () => { deck = []; viewVocab(); });
@@ -191,8 +190,8 @@ async function quizStep(){
     $('#tm').innerHTML = '';
   }
   $('#ans').innerHTML = '<div style="margin-top:6px">' + (it.pair ? '<p class="small muted" style="margin:0">정답</p>' : '') + answerHTML + '</div>' +
-    '<div class="row" style="justify-content:center;margin-top:14px"><button class="btn" type="button" id="no">🔁 다시 볼래요</button><button class="btn good" type="button" id="yes">' + T.icon.check + '알아요</button></div>';
-  const next = ok => { prog.set(it.id, ok); if (ok) quiz.known++; summary(); quiz.pos++; quizStep(); };
+    '<div style="margin-top:14px">' + T.judgeBtns() + '</div>';
+  const next = ok => { T.setMark('p2', it.id, ok ? 'done' : 'wrong'); if (ok) quiz.known++; summary(); quiz.pos++; quizStep(); };
   $('#yes').onclick = () => next(true); $('#no').onclick = () => next(false);
 }
 
@@ -207,6 +206,11 @@ function go(t){
 }
 view.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go); scrollTo({top: 0}); } });
 document.addEventListener('tsc:settings', () => { if (tab !== 'quiz') VIEWS[tab](); });
+T.onMark = () => {
+  summary();
+  const el = $('#statcard'); if (el && lastProg) { const d = prog.count(lastProg[0]); el.querySelector('.stat b').textContent = d; el.querySelector('.progress i').style.width = (d / lastProg[0].length * 100) + '%'; }
+};
+T.exampleSource = () => [...D.patterns, ...D.ex.flat(), ...D.app, ...D.appendix.flat()].map(r => ({py: r[1], hg: r[2], tones: r[3], ko: r[0]}));
 summary();
 go(tab);
 </script>

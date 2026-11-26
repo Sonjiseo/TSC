@@ -7,6 +7,7 @@
 <meta name="description" content="TSC 3부분 빠르게 답하기 — 제안과 부탁에 바로 답하기, 패턴, 단어, 실전 연습">
 <link rel="stylesheet" href="../assets/app.css">
 <script src="../assets/app.js"></script>
+<script src="../assets/words.js"></script>
 </head>
 <body class="has-bottom">
 <main class="wrap">
@@ -109,18 +110,17 @@ const sayBlock = (s, label, open) => '<p class="small muted" style="margin:12px 
 /* ===== 학습 ===== */
 function viewLearn(){
   const done = prog.count(ITEMS.map(x => x.id));
-  let h = '<div class="card"><div class="row"><div class="stat"><b>' + done + '</b><span class="muted">/ ' + ITEMS.length + '문항 외움</span></div><span class="spacer"></span><button class="btn soft" type="button" data-go="exam">⏱ 실전 연습</button></div><div class="progress" style="margin-top:10px"><i style="width:' + (done / ITEMS.length * 100) + '%"></i></div>' +
+  let h = '<div class="card" id="statcard"><div class="row"><div class="stat"><b>' + done + '</b><span class="muted">/ ' + ITEMS.length + '문항 외움</span></div><span class="spacer"></span><button class="btn soft" type="button" data-go="exam">⏱ 실전 연습</button></div><div class="progress" style="margin-top:10px"><i style="width:' + (done / ITEMS.length * 100) + '%"></i></div>' +
     '<div class="tip" style="background:var(--brand-soft)"><b style="color:var(--brand-text)">답변 공식</b><span>① 반응 한마디(hǎo de / duìbuqǐ / bù zhīdào) + ② 구체적인 정보 한두 문장(시간·장소·이유). 15초면 두 문장이 딱 좋아요.</span></div></div>';
   ITEMS.forEach((x, i) => {
     const on = prog.has(x.id);
-    h += '<article class="card' + (on ? ' done' : '') + '" data-q="' + x.id + '"><div class="card-head"><span class="badge">문항 ' + (i + 1) + '</span><span class="label">' + esc(x.title) + '</span>' + T.doneBtn(on) + '</div>' +
+    h += '<article class="card' + (on ? ' done' : '') + '" data-q="' + x.id + '"><div class="card-head"><span class="badge">문항 ' + (i + 1) + '</span><span class="label">' + esc(x.title) + '</span>' + T.markBtns('p3', x.id) + '</div>' +
       '<p class="small muted" style="margin:0">질문 — 중국어로 말해 보세요</p><p class="ko" style="margin:0">' + esc(x.q.ko) + '</p>' + T.revealHTML(T.sayHTML(x.q)) +
       sayBlock(x.a[0], '답변 ① 반응') + sayBlock(x.a[1], '답변 ② 이어서') +
       '<div class="tip"><b>TIP</b><span>' + esc(x.note) + '</span></div>' +
       (() => { const ks = [...new Set([x.q, ...x.a].flatMap(s => s.words))]; return '<details class="more"><summary>단어 (' + ks.length + ')</summary><div class="words">' + ks.map(k => T.wordHTML(W[k])).join('') + '</div></details>'; })() + '</article>';
   });
   view.innerHTML = h;
-  $$('[data-done]', view).forEach(b => b.onclick = () => { const id = b.closest('[data-q]').dataset.q; prog.set(id, !prog.has(id)); summary(); viewLearn(); });
 }
 
 /* ===== 패턴 ===== */
@@ -136,7 +136,7 @@ let wmode = 'list', deck = [], dpos = 0;
 function viewWords(){
   const ids = WORDS.map(x => 'w:' + x[0]);
   let h = '<div class="row" style="margin-top:14px"><span class="seg" id="wmode"><button type="button" data-v="list" aria-pressed="' + (wmode === 'list') + '">목록</button><button type="button" data-v="card" aria-pressed="' + (wmode === 'card') + '">카드 넘기기</button></span><span class="spacer"></span><span class="small muted">외운 단어 ' + wprog.count(ids) + ' / ' + ids.length + '</span></div>';
-  if (wmode === 'list') h += '<div class="card"><div class="words">' + WORDS.map(([k, wd]) => '<div style="position:relative">' + T.wordHTML(wd) + '<button class="btn ' + (wprog.has('w:' + k) ? 'good' : 'ghost') + '" type="button" data-wdone="w:' + k + '" aria-label="외움 표시" style="position:absolute;top:4px;right:4px;padding:4px 6px">' + T.icon.check + '</button></div>').join('') + '</div></div>';
+  if (wmode === 'list') h += '<div class="card"><div class="words">' + WORDS.map(([k, wd]) => T.wordHTML(wd, T.markBtns('p3w', 'w:' + k))).join('') + '</div><p class="small muted" style="margin-bottom:0">단어를 누르면 예문과 비슷한 말·반대말이 나와요. ✓ 외웠어요 · ✗ 틀렸어요</p></div>';
   else {
     if (!deck.length) { deck = ids.slice().sort(() => Math.random() - .5); dpos = 0; }
     if (dpos >= deck.length) h += '<div class="card center"><h3>한 바퀴 끝! 👏</h3><button class="btn primary" type="button" id="again">다시 섞어서 시작</button></div>';
@@ -145,14 +145,13 @@ function viewWords(){
       h += '<div class="small muted" style="margin-top:10px">' + (dpos + 1) + ' / ' + deck.length + '</div><div class="progress" style="margin:6px 0"><i style="width:' + (dpos / deck.length * 100) + '%"></i></div>' +
         '<div class="flash" id="flash"><button class="inner" type="button" aria-label="카드 뒤집기"><div class="face"><div class="small muted">중국어로 말해 보세요</div><div class="big-ko">' + esc(wd[4]) + '</div><div class="small muted">눌러서 뒤집기</div></div>' +
         '<div class="face back"><div class="say"><div class="line py" style="font-size:28px">' + esc(T.pinyinWithExpanded(wd[1])) + '</div><div class="line hg">' + T.toneHTML(wd[2].replaceAll('|', ''), T.hgTones(wd)) + '</div></div></div></button></div>' +
-        '<div class="row" style="justify-content:center"><button class="btn" type="button" id="no">🔁 다시 볼래요</button><button class="btn good" type="button" id="yes">' + T.icon.check + '알아요</button></div>';
+        T.judgeBtns();
     }
   }
   view.innerHTML = h;
   $('#wmode').onclick = e => { const b = e.target.closest('button'); if (b) { wmode = b.dataset.v; deck = []; viewWords(); } };
-  $$('[data-wdone]', view).forEach(b => b.onclick = () => { wprog.set(b.dataset.wdone, !wprog.has(b.dataset.wdone)); summary(); viewWords(); });
   const fl = $('#flash'); if (fl) fl.querySelector('.inner').onclick = () => fl.classList.toggle('flipped');
-  const next = ok => { const id = deck[dpos]; wprog.set(id, ok); if (!ok) deck.push(id); dpos++; summary(); viewWords(); };
+  const next = ok => { const id = deck[dpos]; T.setMark('p3w', id, ok ? 'done' : 'wrong'); if (!ok) deck.push(id); dpos++; summary(); viewWords(); };
   $('#yes') && ($('#yes').onclick = () => next(true));
   $('#no') && ($('#no').onclick = () => next(false));
   $('#again') && ($('#again').onclick = () => { deck = []; viewWords(); });
@@ -188,13 +187,11 @@ async function runExam(){
 }
 function resultsHTML(){
   return '<h2>결과 확인</h2><p class="small muted">모범 답변과 비교하고, 잘 말한 문항은 ‘외웠어요’로 표시하세요.</p>' + exam.results.map(({x}, i) =>
-    '<article class="card" data-q="' + x.id + '"><div class="card-head"><span class="badge">문항 ' + (i + 1) + '</span><span class="label">' + esc(x.title) + '</span>' + T.doneBtn(prog.has(x.id)) + '</div>' +
+    '<article class="card" data-q="' + x.id + '"><div class="card-head"><span class="badge">문항 ' + (i + 1) + '</span><span class="label">' + esc(x.title) + '</span>' + T.markBtns('p3', x.id) + '</div>' +
     '<p class="ko" style="margin:0">' + esc(x.q.ko) + '</p>' + '<div class="reveal open">' + T.sayHTML(x.q) + '</div>' +
     sayBlock(x.a[0], '모범 답변 ①', true) + sayBlock(x.a[1], '모범 답변 ②', true) + '</article>').join('');
 }
-function bindResults(){
-  $$('[data-done]', view).forEach(b => b.onclick = () => { const id = b.closest('[data-q]').dataset.q; const on = !prog.has(id); prog.set(id, on); summary(); b.outerHTML = T.doneBtn(on); bindResults(); });
-}
+function bindResults(){}
 
 /* ===== 탭 ===== */
 const TABS = [['learn','학습','📖'],['pattern','패턴','🧩'],['words','단어','🔤'],['exam','실전','⏱']];
@@ -206,6 +203,12 @@ function go(t){
 }
 view.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go); scrollTo({top: 0}); } });
 document.addEventListener('tsc:settings', () => { if (tab !== 'exam') VIEWS[tab](); });
+T.onMark = () => {
+  summary();
+  if (tab === 'learn') { const el = $('#statcard'); if (el) { const d = prog.count(ITEMS.map(x => x.id)); el.querySelector('.stat b').textContent = d; el.querySelector('.progress i').style.width = (d / ITEMS.length * 100) + '%'; } }
+  if (tab === 'words' && wmode === 'list') viewWords();
+};
+T.exampleSource = () => [...ITEMS.flatMap(x => [x.q, ...x.a]), ...Object.values(NEW)];
 summary();
 go(tab);
 </script>

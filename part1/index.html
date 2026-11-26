@@ -7,6 +7,7 @@
 <meta name="description" content="TSC 1부분 자기소개 — 질문 이해, 내 답변 만들기, 단어, 실전 연습">
 <link rel="stylesheet" href="../assets/app.css">
 <script src="../assets/app.js"></script>
+<script src="../assets/words.js"></script>
 </head>
 <body class="has-bottom">
 <main class="wrap">
@@ -165,11 +166,11 @@ const wordBtn = w => T.wordHTML(w);
 function viewLearn(){
   const A = answers();
   const done = prog.count(QS.map(q => q.id));
-  let h = '<div class="card"><div class="row"><div class="stat"><b>' + done + '</b><span class="muted">/ ' + QS.length + '문항 외움</span></div><span class="spacer"></span><button class="btn soft" type="button" data-go="exam">⏱ 실전 연습</button></div><div class="progress" style="margin-top:10px"><i style="width:' + (done / QS.length * 100) + '%"></i></div></div>';
+  let h = '<div class="card" id="statcard"><div class="row"><div class="stat"><b>' + done + '</b><span class="muted">/ ' + QS.length + '문항 외움</span></div><span class="spacer"></span><button class="btn soft" type="button" data-go="exam">⏱ 실전 연습</button></div><div class="progress" style="margin-top:10px"><i style="width:' + (done / QS.length * 100) + '%"></i></div></div>';
   QS.forEach((q, i) => {
     const a = A[i], on = prog.has(q.id);
     h += '<article class="card' + (on ? ' done' : '') + '" data-q="' + q.id + '">' +
-      '<div class="card-head"><span class="badge">문제 ' + (i + 1) + '</span><span class="label">' + q.topic + '</span>' + T.doneBtn(on) + '</div>' +
+      '<div class="card-head"><span class="badge">문제 ' + (i + 1) + '</span><span class="label">' + q.topic + '</span>' + T.markBtns('p1', q.id) + '</div>' +
       T.sayHTML(q.q) +
       '<p class="muted" style="margin:6px 0 10px">' + esc(q.q.ko) + '</p>' +
       '<details class="more"><summary>단어 풀이 (' + q.words.length + ')</summary><div class="words">' + q.words.map(k => wordBtn(W[k])).join('') + '</div></details>' +
@@ -181,7 +182,6 @@ function viewLearn(){
       '</article>';
   });
   view.innerHTML = h;
-  $$('[data-done]', view).forEach(b => b.onclick = () => { const id = b.closest('[data-q]').dataset.q; prog.set(id, !prog.has(id)); summary(); viewLearn(); });
 }
 
 /* ===== 화면: 내 답변 ===== */
@@ -235,7 +235,7 @@ function viewWords(){
     '<div class="chips">' + sets.map(([v, l]) => '<button class="chip" type="button" data-set="' + v + '" aria-pressed="' + (wordSet === v) + '">' + l + '<span class="n">' + ALL_WORDS.filter(w => v === 'all' || (v === 'todo' ? !wprog.has(w[0]) : w[2] === v)).length + '</span></button>').join('') + '</div>';
   if (!pool.length) h += '<div class="card empty">🎉 모두 외웠어요!</div>';
   else if (wordMode === 'list') {
-    h += '<div class="card"><div class="words">' + pool.map(([id, w]) => '<div style="position:relative">' + wordBtn(w) + '<button class="btn ' + (wprog.has(id) ? 'good' : 'ghost') + '" type="button" data-wdone="' + id + '" aria-pressed="' + wprog.has(id) + '" aria-label="외움 표시" style="position:absolute;top:4px;right:4px;padding:4px 6px">' + T.icon.check + '</button></div>').join('') + '</div><p class="small muted" style="margin-bottom:0">단어를 누르면 소리가 나와요. ✓를 눌러 외운 단어를 표시하세요.</p></div>';
+    h += '<div class="card"><div class="words">' + pool.map(([id, w]) => T.wordHTML(w, T.markBtns('p1w', id))).join('') + '</div><p class="small muted" style="margin-bottom:0">단어를 누르면 예문과 비슷한 말·반대말이 나와요. ✓ 외웠어요 · ✗ 틀렸어요</p></div>';
   } else {
     if (!deck.length || deck.some(id => !pool.find(p => p[0] === id))) { deck = pool.map(p => p[0]).sort(() => Math.random() - .5); dpos = 0; }
     if (dpos >= deck.length) {
@@ -245,15 +245,14 @@ function viewWords(){
       h += '<div class="small muted">' + (dpos + 1) + ' / ' + deck.length + '</div><div class="progress" style="margin:6px 0"><i style="width:' + (dpos / deck.length * 100) + '%"></i></div>' +
         '<div class="flash" id="flash"><button class="inner" type="button" aria-label="카드 뒤집기"><div class="face"><div class="small muted">중국어로 말해 보세요</div><div class="big-ko">' + esc(w[4]) + '</div><div class="small muted">눌러서 뒤집기</div></div>' +
         '<div class="face back"><div class="say"><div class="line py" style="font-size:28px">' + esc(T.pinyinWithExpanded(w[1])) + '</div><div class="line hg">' + T.toneHTML(w[2].replaceAll('|', ''), hgTones(w)) + '</div></div><div class="small muted">' + esc(w[4]) + '</div></div></button></div>' +
-        '<div class="row" style="justify-content:center"><button class="btn" type="button" id="no">🔁 다시 볼래요</button><button class="btn good" type="button" id="yes">' + T.icon.check + '알아요</button></div>';
+        T.judgeBtns();
     }
   }
   view.innerHTML = h;
   $('#wmode').onclick = e => { const b = e.target.closest('button'); if (b) { wordMode = b.dataset.v; deck = []; viewWords(); } };
   $$('[data-set]', view).forEach(b => b.onclick = () => { wordSet = b.dataset.set; deck = []; viewWords(); });
-  $$('[data-wdone]', view).forEach(b => b.onclick = () => { const id = b.dataset.wdone; wprog.set(id, !wprog.has(id)); summary(); viewWords(); });
   const fl = $('#flash'); if (fl) fl.querySelector('.inner').onclick = () => fl.classList.toggle('flipped');
-  const next = known => { const id = deck[dpos]; if (known) wprog.set(id, true); else { wprog.set(id, false); deck.push(id); } dpos++; summary(); viewWords(); };
+  const next = known => { const id = deck[dpos]; T.setMark('p1w', id, known ? 'done' : 'wrong'); if (!known) deck.push(id); dpos++; summary(); viewWords(); };
   $('#yes') && ($('#yes').onclick = () => next(true));
   $('#no') && ($('#no').onclick = () => next(false));
   $('#again') && ($('#again').onclick = () => { deck = []; viewWords(); });
@@ -291,13 +290,11 @@ async function runExam(){
 }
 function resultsHTML(){
   return '<h2>결과 확인</h2><p class="small muted">모범 답변과 비교하고, 잘 말한 문항은 ‘외웠어요’로 표시하세요.</p>' + exam.results.map(({q, a}, i) =>
-    '<article class="card" data-q="' + q.id + '"><div class="card-head"><span class="badge">문제 ' + (i + 1) + '</span><span class="label">' + q.topic + '</span>' + T.doneBtn(prog.has(q.id)) + '</div>' +
+    '<article class="card" data-q="' + q.id + '"><div class="card-head"><span class="badge">문제 ' + (i + 1) + '</span><span class="label">' + q.topic + '</span>' + T.markBtns('p1', q.id) + '</div>' +
     T.sayHTML({py: q.q.py}) +
     (a ? '<p class="small muted" style="margin:8px 0 2px">모범 답변</p>' + T.revealHTML(T.sayHTML(a), true) : '') + '</article>').join('');
 }
-function bindResults(){
-  $$('[data-done]', view).forEach(b => b.onclick = () => { const id = b.closest('[data-q]').dataset.q; const on = !prog.has(id); prog.set(id, on); summary(); b.outerHTML = T.doneBtn(on); bindResults(); });
-}
+function bindResults(){}
 
 /* ===== 탭 ===== */
 const view = $('#view');
@@ -307,6 +304,12 @@ let tab = T.load('tsc-p1-tab', 'learn'); if (!VIEWS[tab]) tab = 'learn';
 function go(t){ if (exam.running) { T.toast('실전 연습 중이에요. ‘그만하기’를 먼저 눌러 주세요.'); T.tabs($('#tabs'), TABS, tab, go); return; } view.oninput = view.onchange = null; tab = t; T.save('tsc-p1-tab', t); T.tabs($('#tabs'), TABS, t, go); VIEWS[t](); }
 view.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go); scrollTo({top: 0}); } });
 document.addEventListener('tsc:settings', () => { if (tab === 'learn') viewLearn(); });
+T.onMark = () => {
+  summary();
+  if (tab === 'learn') { const el = $('#statcard'); if (el) { const d = prog.count(QS.map(q => q.id)); el.querySelector('.stat b').textContent = d; el.querySelector('.progress i').style.width = (d / QS.length * 100) + '%'; } }
+  if (tab === 'words' && wordMode === 'list') viewWords();
+};
+T.exampleSource = () => [...QS.map(q => q.q), ...answers().filter(Boolean), ...QS.flatMap(q => q.more.map(([hz, py, ko]) => ({py, ko})))];
 summary();
 go(tab);
 </script>
