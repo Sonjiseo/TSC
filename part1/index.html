@@ -138,11 +138,16 @@ const hgTones = T.hgTones;
 const wordBtn = w => T.wordHTML(w);
 
 /* ===== 화면: 학습 ===== */
+let onlyWrong = false;
 function viewLearn(){
   const A = answers();
   const done = prog.count(QS.map(q => q.id));
-  let h = '<div class="card" id="statcard"><div class="row"><div class="stat"><b>' + done + '</b><span class="muted">/ ' + QS.length + '문항 외움</span></div><span class="spacer"></span><button class="btn soft" type="button" data-go="exam">⏱ 실전 연습</button></div><div class="progress" style="margin-top:10px"><i style="width:' + (done / QS.length * 100) + '%"></i></div></div>';
-  QS.forEach((q, i) => {
+  let h = '<div class="card" id="statcard"><div class="row"><div class="stat"><b>' + done + '</b><span class="muted">/ ' + QS.length + '문항 외움</span></div><span class="spacer"></span><button class="btn soft" type="button" data-go="exam">⏱ 실전 연습</button></div><div class="progress" style="margin-top:10px"><i style="width:' + (done / QS.length * 100) + '%"></i></div><!--wrong--></div>';
+  const wrongN = QS.filter(q => T.markState('p1', q.id) === 'wrong').length;
+  h = h.replace('<!--wrong-->', '<div class="row" style="margin-top:10px">' + T.wrongToggle(onlyWrong, wrongN) + '</div>');
+  const list = onlyWrong ? QS.filter(q => T.markState('p1', q.id) === 'wrong') : QS;
+  if (!list.length) h += T.emptyWrong;
+  list.forEach(q => { const i = QS.indexOf(q);
     const a = A[i], on = prog.has(q.id);
     h += '<article class="card' + (on ? ' done' : '') + '" data-q="' + q.id + '">' +
       '<div class="card-head"><span class="badge">문제 ' + (i + 1) + '</span><span class="label">' + q.topic + '</span>' + T.markBtns('p1', q.id) + '</div>' +
@@ -204,11 +209,12 @@ function viewMe(){
 /* ===== 화면: 단어 ===== */
 let wordMode = 'list', wordSet = 'all', deck = [], dpos = 0;
 function viewWords(){
-  const sets = [['all', '전체'], ['가족', '가족'], ['질문·답변', '질문·답변'], ['todo', '아직 못 외운 것']];
-  const pool = ALL_WORDS.filter(w => wordSet === 'all' || (wordSet === 'todo' ? !wprog.has(w[0]) : w[2] === wordSet));
+  const sets = [['all', '전체'], ['가족', '가족'], ['질문·답변', '질문·답변'], ['todo', '아직 못 외운 것'], ['wrong', '✗ 틀린 것']];
+  const inSet = (v, w) => v === 'all' || (v === 'todo' ? !wprog.has(w[0]) : v === 'wrong' ? T.markState('p1w', w[0]) === 'wrong' : w[2] === v);
+  const pool = ALL_WORDS.filter(w => inSet(wordSet, w));
   let h = '<div class="row" style="margin-top:8px"><span class="seg" id="wmode"><button type="button" data-v="list" aria-pressed="' + (wordMode === 'list') + '">목록</button><button type="button" data-v="card" aria-pressed="' + (wordMode === 'card') + '">카드 넘기기</button></span><span class="spacer"></span><span class="small muted">외운 단어 ' + wprog.count(ALL_WORDS.map(w => w[0])) + ' / ' + ALL_WORDS.length + '</span></div>' +
-    '<div class="chips">' + sets.map(([v, l]) => '<button class="chip" type="button" data-set="' + v + '" aria-pressed="' + (wordSet === v) + '">' + l + '<span class="n">' + ALL_WORDS.filter(w => v === 'all' || (v === 'todo' ? !wprog.has(w[0]) : w[2] === v)).length + '</span></button>').join('') + '</div>';
-  if (!pool.length) h += '<div class="card empty">🎉 모두 외웠어요!</div>';
+    '<div class="chips">' + sets.map(([v, l]) => '<button class="chip" type="button" data-set="' + v + '" aria-pressed="' + (wordSet === v) + '">' + l + '<span class="n">' + ALL_WORDS.filter(w => inSet(v, w)).length + '</span></button>').join('') + '</div>';
+  if (!pool.length) h += wordSet === 'wrong' ? T.emptyWrong : '<div class="card empty">🎉 모두 외웠어요!</div>';
   else if (wordMode === 'list') {
     h += '<div class="card"><div class="words">' + pool.map(([id, w]) => T.wordHTML(w, T.markBtns('p1w', id))).join('') + '</div><p class="small muted" style="margin-bottom:0">단어를 누르면 예문과 비슷한 말·반대말이 나와요. ✓ 외웠어요 · ✗ 틀렸어요</p></div>';
   } else {
@@ -277,7 +283,7 @@ const TABS = [['learn','학습','📖'],['me','내 답변','✏️'],['words','�
 const VIEWS = {learn: viewLearn, me: viewMe, words: viewWords, exam: viewExam};
 let tab = T.load('tsc-p1-tab', 'learn'); if (!VIEWS[tab]) tab = 'learn';
 function go(t){ if (exam.running) { T.toast('실전 연습 중이에요. ‘그만하기’를 먼저 눌러 주세요.'); T.tabs($('#tabs'), TABS, tab, go); return; } view.oninput = view.onchange = null; tab = t; T.save('tsc-p1-tab', t); T.tabs($('#tabs'), TABS, t, go); VIEWS[t](); }
-view.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go); scrollTo({top: 0}); } });
+view.addEventListener('click', e => { if (e.target.closest('[data-wrongonly]')) { onlyWrong = !onlyWrong; VIEWS[tab](); return; } const g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go); scrollTo({top: 0}); } });
 document.addEventListener('tsc:settings', () => { if (tab === 'learn') viewLearn(); });
 T.onMark = () => {
   summary();

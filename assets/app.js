@@ -178,7 +178,9 @@ const lexKey = s => (s || '').replace(/\s*\([^)]*\)/g, '').replace(/[’]/g, "'"
 T.addLex = info => { if (!info || !info.py || !info.ko) return; for (const alt of info.py.split(/\s+\/\s+/)) { const k = lexKey(alt); if (!k) continue; const list = T.LEX[k] || (T.LEX[k] = []); if (!list.some(x => x.ko === info.ko)) list.push(info); } };
 /* [병음, 한글(음절은 | 로), 뜻] 목록을 사전에 넣기 */
 T.addLexList = list => list.forEach(([py, hg, ko]) => { const t = T.sandhi(T.tonesOf(py)), ch = hg.split(/[| ]+/).filter(Boolean); T.addLex({py, hg: hg.replaceAll('|', ''), parts: ch.map((c, i) => [c, t[i] || 0]), ko}); });
-const lexInfo = list => list.length === 1 ? list[0] : Object.assign({}, list[0], {ko: list.map(x => x.ko).join(' / ')});
+/* 뜻이 여러 개면 문장 앞뒤 단어로 하나를 고른다 (T.lexPick은 파트에서 정함). 못 고르면 첫 번째 뜻 */
+T.lexPick = null;
+const lexInfo = (list, key, ctx) => { if (list.length === 1) return list[0]; const hit = T.lexPick && T.lexPick(key, list, ctx); return hit || list[0]; };
 /* 문자열 병음 문장에서 사전에 있는 단어(1~3 단어 묶음)를 찾아 감싸기 */
 const linkPinyin = (py, expand) => {
   const toks = []; py.split(' ').forEach(w => { if (w.startsWith('(') && toks.length) toks[toks.length - 1] += ' ' + w; else toks.push(w); });
@@ -188,10 +190,11 @@ const linkPinyin = (py, expand) => {
     let hit = 0;
     for (let n = Math.min(3, toks.length - i); n >= 1 && !hit; n--) {
       const grp = toks.slice(i, i + n); if (grp.includes('/')) continue;
-      const list = T.LEX[lexKey(grp.join(' '))];
+      const key = lexKey(grp.join(' ')), list = T.LEX[key];
       if (list) {
         const raw = grp.join(' '), m = raw.match(/^(.*?)([,.?!]*)$/);
-        out.push(twSpan(esc(expand ? T.pinyinWithExpanded(m[1]) : m[1]), lexInfo(list)) + esc(m[2])); i += n; hit = n;
+        const keys = toks.map(lexKey);
+        out.push(twSpan(esc(expand ? T.pinyinWithExpanded(m[1]) : m[1]), lexInfo(list, key, {keys, i, n, prev: keys[i - 1], next: keys[i + n], next2: keys[i + n + 1]})) + esc(m[2])); i += n; hit = n;
       }
     }
     if (!hit) { out.push(esc(expand ? T.pinyinWithExpanded(toks[i]) : toks[i])); i++; }
@@ -263,6 +266,9 @@ T.markBtns = (part, id) => { const st = T.markState(part, id);
 /* 넘기는 카드·퀴즈용 큰 아이콘 버튼 */
 T.judgeBtns = () => '<div class="row" style="justify-content:center;gap:14px"><button class="judge no" type="button" id="no" aria-label="틀렸어요" title="틀렸어요">' + I.x + '</button><button class="judge ok" type="button" id="yes" aria-label="외웠어요" title="외웠어요">' + I.check + '</button></div>';
 T.onMark = null;
+/* ✗ 틀린 것만 보기 버튼 */
+T.wrongToggle = (on, n) => '<button class="chip" type="button" data-wrongonly aria-pressed="' + !!on + '">✗ 틀린 것만<span class="n">' + n + '</span></button>';
+T.emptyWrong = '<div class="card empty">틀렸다고 표시한 것이 없어요 🎉<br><span class="small">카드의 ✗ 버튼을 누르면 여기에 모여요.</span></div>';
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-mark]'); if (!b) return;
   e.stopPropagation();

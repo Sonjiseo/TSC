@@ -131,6 +131,8 @@ const REL = {
   'xuéxiào': [{rel:[['shàngxué','샹|쉬에','학교에 다니다'],['xuésheng','쉬에|성','학생']]}],
   'shēngrì': [{rel:[['chūshēng','추|성','태어나다'],['lǐwù','리|우','선물']]}],
   'míngzi': [{rel:[['jiào','쟈오','(이름을) ~라고 부르다']]}],
+  'zhīdào': [{note:'회화에서는 뒤 음절을 가볍게 zhīdao로도 읽어요.'}],
+  'zhǔyi': [{note:'회화에서는 zhúyi로도 읽어요.'}],
 };
 T.REL = REL;
 const norm = py => (py || '').replace(/\s*\([^)]*\)/g, '').replace(/[’]/g, "'").trim().toLowerCase();
@@ -212,8 +214,10 @@ document.addEventListener('click', e => {
   tipFor = el; el.classList.add('on');
   tip = document.createElement('div'); tip.className = 'tw-tip'; tip.setAttribute('role', 'tooltip'); tip.dataset.info = el.dataset.tw;
   const r = T.relOf(info);
+  const pairs = r && (r.syn || r.ant || r.rel);
   tip.innerHTML = '<div class="w-py">' + esc(T.pinyinWithExpanded(info.py)) + '</div>' + (info.hg ? '<div class="hgw">' + T.toneHTML(info.hg, info.parts || []) + '</div>' : '') + '<div class="tw-ko">' + esc(info.ko) + '</div>' +
-    '<button type="button" class="tw-more" data-more>' + (r ? '예문 · 비슷한 말 · 반대말' : '예문 보기') + ' ›</button>';
+    (r && r.note ? '<div class="small muted" style="margin-top:4px">💡 ' + esc(r.note) + '</div>' : '') +
+    '<button type="button" class="tw-more" data-more>' + (pairs ? '예문 · 비슷한 말 · 반대말' : '예문 보기') + ' ›</button>';
   document.body.append(tip);
   const b = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
   let left = Math.min(Math.max(8, b.left + b.width / 2 - w / 2), innerWidth - w - 8);

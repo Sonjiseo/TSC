@@ -58,14 +58,17 @@ function rowCard(r, id, note, word){
   return '<div class="card' + (prog.has(id) ? ' done' : '') + '" data-id="' + id + '" style="padding:14px 16px;margin:8px 0"><div class="row"><span class="ko" style="flex:1">' + esc(r[0]) + '</span>' + (word ? '<button class="mark" type="button" aria-label="단어 자세히" title="단어 자세히" data-w="' + esc(JSON.stringify({py: r[1], hg: r[2], parts: r[3], ko: r[0]})) + '">' + T.icon.info + '</button>' : '') + T.markBtns('p2', id) + '</div>' + sayRow(r) +
     (note ? '<div class="tip"><b>TIP</b><span>' + esc(note) + '</span></div>' : '') + '</div>';
 }
-let lastProg = null;
-const progressCard = (ids, label) => { lastProg = [ids, label]; const d = prog.count(ids); return '<div class="card" id="statcard"><div class="row"><div class="stat"><b>' + d + '</b><span class="muted">/ ' + ids.length + ' ' + label + '</span></div><span class="spacer"></span><button class="btn soft" type="button" data-go="quiz">⏱ 실전 퀴즈</button></div><div class="progress" style="margin-top:10px"><i style="width:' + (d / ids.length * 100) + '%"></i></div></div>'; };
+let lastProg = null, onlyWrong = false;
+const isWrong = id => T.markState('p2', id) === 'wrong';
+const progressCard = (ids, label) => { lastProg = [ids, label]; const d = prog.count(ids); return '<div class="card" id="statcard"><div class="row"><div class="stat"><b>' + d + '</b><span class="muted">/ ' + ids.length + ' ' + label + '</span></div><span class="spacer"></span><button class="btn soft" type="button" data-go="quiz">⏱ 실전 퀴즈</button></div><div class="progress" style="margin-top:10px"><i style="width:' + (d / ids.length * 100) + '%"></i></div><div class="row" style="margin-top:10px">' + T.wrongToggle(onlyWrong, ids.filter(isWrong).length) + '</div></div>'; };
 const chips = (items, cur, attr) => '<div class="chips">' + items.map(([v, l, n]) => '<button class="chip" type="button" ' + attr + '="' + v + '" aria-pressed="' + (String(v) === String(cur)) + '">' + esc(l) + (n != null ? '<span class="n">' + n + '</span>' : '') + '</button>').join('') + '</div>';
 function bindDone(){}
 
 /* ===== 교재 예제 ===== */
 let page = T.load('tsc-p2-page', 0);
 function viewEx(){
+  if (onlyWrong) { const list = D.ex.map((x, i) => [x, i]).filter(([x, i]) => isWrong('ex:' + i));
+    view.innerHTML = progressCard(IDS.ex, '교재 예제 외움') + (list.length ? list.map(([x, i]) => pairCard(x, 'ex:' + i, (Math.floor(i / 4) + 9) + '쪽 · ' + (i % 4 + 1) + '번')).join('') : T.emptyWrong); return; }
   const ids = (i) => IDS.ex.slice(i * 4, i * 4 + 4);
   view.innerHTML = progressCard(IDS.ex, '교재 예제 외움') +
     chips(PAGES.map((p, i) => [i, (i + 9) + '쪽 ' + p, prog.count(ids(i)) + '/4']), page, 'data-page') +
@@ -80,16 +83,19 @@ function viewEx(){
 /* ===== 단어장 ===== */
 let topic = T.load('tsc-p2-topic', 0), vmode = 'list', deck = [], dpos = 0;
 function viewVocab(){
-  const rows = D.v[topic][1], ids = rows.map((_, i) => 'v:' + topic + ':' + i);
+  const vrow = id => { const [, t, i] = id.split(':'); return D.v[+t][1][+i]; };
+  const ids = onlyWrong ? IDS.vocab.filter(isWrong) : D.v[topic][1].map((_, i) => 'v:' + topic + ':' + i);
   let h = progressCard(IDS.vocab, '단어 외움') +
     chips(D.v.map((g, t) => [t, g[0], prog.count(g[1].map((_, i) => 'v:' + t + ':' + i)) + '/' + g[1].length]), topic, 'data-topic') +
     '<div class="row"><span class="seg" id="vmode"><button type="button" data-v="list" aria-pressed="' + (vmode === 'list') + '">목록</button><button type="button" data-v="card" aria-pressed="' + (vmode === 'card') + '">카드 넘기기</button></span></div>';
-  if (vmode === 'list') h += rows.map((r, i) => rowCard(r, ids[i], '', true)).join('');
+  if (onlyWrong) h = h.replace(/<div class="chips">[\s\S]*?<\/div>/, '');
+  if (!ids.length) h += onlyWrong ? T.emptyWrong : '';
+  else if (vmode === 'list') h += ids.map(id => rowCard(vrow(id), id, '', true)).join('');
   else {
     if (!deck.length || !deck.every(id => ids.includes(id))) { deck = ids.slice().sort(() => Math.random() - .5); dpos = 0; }
     if (dpos >= deck.length) h += '<div class="card center"><h3>한 바퀴 끝! 👏</h3><p class="muted">외운 단어 ' + prog.count(deck) + ' / ' + deck.length + '</p><button class="btn primary" type="button" id="again">다시 섞어서 시작</button></div>';
     else {
-      const r = rows[+deck[dpos].split(':')[2]];
+      const r = vrow(deck[dpos]);
       h += '<div class="small muted" style="margin-top:10px">' + (dpos + 1) + ' / ' + deck.length + '</div><div class="progress" style="margin:6px 0"><i style="width:' + (dpos / deck.length * 100) + '%"></i></div>' +
         '<div class="flash" id="flash"><button class="inner" type="button" aria-label="카드 뒤집기"><div class="face"><div class="small muted">중국어로 말해 보세요</div><div class="big-ko">' + esc(r[0]) + '</div><div class="small muted">눌러서 뒤집기</div></div>' +
         '<div class="face back"><div class="say"><div class="line py" style="font-size:26px">' + esc(r[1]) + '</div><div class="line hg" style="font-size:20px">' + T.toneHTML(r[2], r[3]) + '</div></div><div class="small muted">' + esc(r[0]) + '</div></div></button></div>' +
@@ -111,15 +117,17 @@ function viewVocab(){
 function viewPattern(){
   view.innerHTML = progressCard(IDS.pattern, '문장 외움') +
     '<h2>문장 패턴</h2><p class="small muted">먼저 질문을 말해 보고, 숫자나 장소를 바꿔 한 번 더 말해 보세요.</p>' +
-    D.patterns.map((r, i) => rowCard(r, 'pt:' + i)).join('') +
+    D.patterns.map((r, i) => (!onlyWrong || isWrong('pt:' + i)) ? rowCard(r, 'pt:' + i) : '').join('') +
     '<h2>응용문제 모아 보기</h2>' +
-    D.app.map((r, i) => { const n = D.appNotes[r[0]]; const g = n && D.gloss[n[0]]; return rowCard(r, 'app:' + i, n ? (g ? g[1] + ' (' + g[0] + ') · ' : '') + n[1] : ''); }).join('');
+    D.app.map((r, i) => { if (onlyWrong && !isWrong('app:' + i)) return ''; const n = D.appNotes[r[0]]; const g = n && D.gloss[n[0]]; return rowCard(r, 'app:' + i, n ? (g ? g[1] + ' (' + g[0] + ') · ' : '') + n[1] : ''); }).join('');
   bindDone();
 }
 
 /* ===== 부록 ===== */
 let apage = T.load('tsc-p2-apage', 0);
 function viewAppendix(){
+  if (onlyWrong) { const list = D.appendix.map((x, i) => [x, i]).filter(([x, i]) => isWrong('ap:' + i));
+    view.innerHTML = progressCard(IDS.appendix, '부록 문제 외움') + (list.length ? list.map(([x, i]) => pairCard(x, 'ap:' + i, '부록 ' + (i + 1) + '번', D.hints[i + 1] ? '<p class="small" style="margin:0 0 4px;color:var(--warn)">🖼 그림 단서 · ' + esc(D.hints[i + 1]) + '</p>' : '')).join('') : T.emptyWrong); return; }
   const [a, b] = RANGES[apage];
   view.innerHTML = progressCard(IDS.appendix, '부록 문제 외움') +
     chips(RANGES.map(([x, y], i) => [i, x + '–' + y + '번', prog.count(IDS.appendix.slice(x - 1, y)) + '/' + (y - x + 1)]), apage, 'data-ap') +
@@ -138,11 +146,11 @@ const CATS = [
   ['app', '응용문제', () => D.app.map((r, i) => ({id: 'app:' + i, row: r}))],
   ['ap', '부록', () => D.appendix.map((x, i) => ({id: 'ap:' + i, pair: x}))],
 ];
-const quiz = Object.assign({cats: ['ex', 'ap'], timed: true, onlyTodo: false}, T.load('tsc-p2-quiz', {}), {deck: [], pos: 0, running: false, cd: null});
-const saveQuiz = () => T.save('tsc-p2-quiz', {cats: quiz.cats, timed: quiz.timed, onlyTodo: quiz.onlyTodo});
+const quiz = Object.assign({cats: ['ex', 'ap'], timed: true, onlyTodo: false, onlyWrong: false}, T.load('tsc-p2-quiz', {}), {deck: [], pos: 0, running: false, cd: null});
+const saveQuiz = () => T.save('tsc-p2-quiz', {cats: quiz.cats, timed: quiz.timed, onlyTodo: quiz.onlyTodo, onlyWrong: quiz.onlyWrong});
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 function startQuiz(){
-  let sets = CATS.filter(c => quiz.cats.includes(c[0])).map(c => shuffle(c[2]().filter(it => !quiz.onlyTodo || !prog.has(it.id))));
+  let sets = CATS.filter(c => quiz.cats.includes(c[0])).map(c => shuffle(c[2]().filter(it => (!quiz.onlyTodo || !prog.has(it.id)) && (!quiz.onlyWrong || isWrong(it.id)))));
   const deck = [];
   while (deck.length < 10 && sets.some(s => s.length)) for (const s of shuffle(sets.filter(s => s.length))) if (deck.length < 10) deck.push(s.pop());
   quiz.deck = shuffle(deck); quiz.pos = 0; quiz.known = 0; quizStep();
@@ -150,12 +158,13 @@ function startQuiz(){
 function viewQuiz(){
   view.innerHTML = '<div class="card"><h3 style="margin-top:0">⏱ 실전 퀴즈 10문제</h3><p class="small muted">고른 유형을 골고루 섞어 출제해요. 타이머를 켜면 실제 시험처럼 <b>준비 3초 · 답변 6초</b>가 흘러요.</p>' +
     '<p class="small muted" style="margin:10px 0 4px">출제 범위</p><div class="row">' + CATS.map(([k, l]) => '<label class="check"><input type="checkbox" data-cat="' + k + '"' + (quiz.cats.includes(k) ? ' checked' : '') + '> ' + l + '</label>').join('') + '</div>' +
-    '<p class="small muted" style="margin:12px 0 4px">방식</p><div class="row"><label class="check"><input type="checkbox" id="timed"' + (quiz.timed ? ' checked' : '') + '> 시험 타이머 (3초 + 6초)</label><label class="check"><input type="checkbox" id="todo"' + (quiz.onlyTodo ? ' checked' : '') + '> 아직 못 외운 것만</label></div>' +
+    '<p class="small muted" style="margin:12px 0 4px">방식</p><div class="row"><label class="check"><input type="checkbox" id="timed"' + (quiz.timed ? ' checked' : '') + '> 시험 타이머 (3초 + 6초)</label><label class="check"><input type="checkbox" id="todo"' + (quiz.onlyTodo ? ' checked' : '') + '> 아직 못 외운 것만</label><label class="check"><input type="checkbox" id="wrongq"' + (quiz.onlyWrong ? ' checked' : '') + '> ✗ 틀린 것만</label></div>' +
     '<button class="btn primary big" type="button" id="start" style="width:100%;margin-top:14px"' + (quiz.cats.length ? '' : ' disabled') + '>10문제 시작</button></div>';
   view.onchange = e => {
     if (e.target.dataset.cat) quiz.cats = CATS.map(c => c[0]).filter(k => $('[data-cat="' + k + '"]').checked);
     if (e.target.id === 'timed') quiz.timed = e.target.checked;
     if (e.target.id === 'todo') quiz.onlyTodo = e.target.checked;
+    if (e.target.id === 'wrongq') quiz.onlyWrong = e.target.checked;
     saveQuiz(); $('#start').disabled = !quiz.cats.length;
   };
   $('#start').onclick = () => { view.onchange = null; startQuiz(); };
@@ -204,7 +213,7 @@ function go(t){
   view.onchange = null; tab = t; T.save('tsc-p2-tab', t);
   T.tabs($('#tabs'), TABS, t, go); VIEWS[t]();
 }
-view.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go); scrollTo({top: 0}); } });
+view.addEventListener('click', e => { if (e.target.closest('[data-wrongonly]')) { onlyWrong = !onlyWrong; deck = []; VIEWS[tab](); scrollTo({top: 0}); return; } const g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go); scrollTo({top: 0}); } });
 document.addEventListener('tsc:settings', () => { if (tab !== 'quiz') VIEWS[tab](); });
 T.onMark = () => {
   summary();
@@ -222,6 +231,26 @@ T.addLexList([
   ['diànyǐng','뎬|잉','영화'], ['shāngdiàn','샹|뎬','상점'], ['gōnggòng qìchē','궁|궁 치|처','버스'], ['bǐ','비','~보다 (비교)'], ['zěnmeyàng','전|머|양','어때?'],
   ['túshūguǎn','투|슈|관','도서관'], ['nánháizi','난|하이|즈','남자아이'], ['yéye','예|예','할아버지'], ['zuǒbian','쭤|볜','왼쪽'],
 ]);
+T.addLexList([['hào','하오','호 (방 번호)']]);
+/* 뜻이 여러 개인 단어: 문장에 맞는 뜻 고르기 */
+const NUMS = ['líng','yī','yí','yì','èr','liǎng','sān','sì','wǔ','liù','qī','bā','jiǔ','shí','bǎi','yāo'];
+T.lexPick = (key, list, c) => {
+  const by = word => list.find(x => x.ko.includes(word));
+  const has = w => c.keys.includes(w);
+  switch (key) {
+    case 'kè': return c.keys[c.i - 2] === 'diǎn' ? by('15분') : by('그램');
+    case 'zuò': return (['zhè','nà'].includes(c.prev) || ['shān','lóu'].includes(c.next)) ? by('건축물')
+      : (['chūzūchē','gōnggòngqìchē','chē'].includes(c.next) || (c.next === 'shénme' && c.next2 === 'qù')) ? by('타다') : by('하다');
+    case 'zhī': return ['yuánzhūbǐ','qiānbǐ','gāngbǐ'].includes(c.next) ? by('자루') : by('마리');
+    case 'qián': return by('돈');
+    case 'kuài': return ['gèng','hěn','zuì'].includes(c.prev) ? by('빠르') : by('위안');
+    case 'fēn': return has('dé') ? by('점') : has('diǎn') ? by('분') : by('0.01');
+    case 'lù': return c.next === 'shang' ? by('길') : by('번');
+    case 'wǎn': return by('그릇');
+    case 'hào': return has('yuè') ? by('날짜') : has('zhù') ? by('호') : by('날짜');
+    default: return null;
+  }
+};
 T.exampleSource = () => [...D.patterns, ...D.ex.flat(), ...D.app, ...D.appendix.flat()].map(r => ({py: r[1], hg: r[2], tones: r[3], ko: r[0]}));
 summary();
 go(tab);

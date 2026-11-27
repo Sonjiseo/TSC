@@ -31,7 +31,7 @@ const W = {
   ni:['你','nǐ','니',[3],'너'], wo:['我','wǒ','워',[3],'나'],
   bang:['帮','bāng','방',[1],'돕다'], zhunbei:['准备','zhǔnbèi','주언|베이',[3,4],'준비하다'], huiyi:['会议','huìyì','후에이|이',[4,4],'회의'], ziliao:['资料','zīliào','즈|랴오',[1,4],'자료'],
   ba:['吧','ba','바',[0],'~하자, ~해 (제안·부탁)'], haode:['好的','hǎo de','하오 더',[3,0],'좋아, 알겠어'], mei:['没','méi','메이',[2],'없다'], wenti:['问题','wèntí','원|티',[4,2],'문제'],
-  haoC:['好','hǎo','하오',[3],'(동사 뒤) 다 ~하다'], yihou:['以后','yǐhòu','이|허우',[3,4],'~한 뒤에'], ba3:['把','bǎ','바',[3],'~을 (목적어를 앞으로)'], fang:['放','fàng','팡',[4],'놓다'],
+  haoC:['好','hǎo','하오',[3],'(동사 뒤) 다 ~하다'], wan:['完','wán','완',[2],'(동사 뒤) 다 ~하다, 끝내다'], shang4:['上','shàng','샹',[4],'~위'], yihou:['以后','yǐhòu','이|허우',[3,4],'~한 뒤에'], ba3:['把','bǎ','바',[3],'~을 (목적어를 앞으로)'], fang:['放','fàng','팡',[4],'놓다'],
   zai:['在','zài','짜이',[4],'~에 (있다), ~하는 중'], de:['的','de','더',[0],'~의'], zhuozi:['桌子','zhuōzi','줘|즈',[1,0],'책상'], shang:['上','shang','샹',[0],'~위'],
   yao:['要','yào','야오',[4],'~해야 한다'], neng:['能','néng','넝',[2],'~할 수 있다'], fanyi:['翻译','fānyì','판|이',[1,4],'번역하다'], ma:['吗','ma','마',[0],'~니? (의문)'],
   feichang:['非常','fēicháng','페이|창',[1,2],'매우'], baoqian:['抱歉','bàoqiàn','바오|쳰',[4,4],'미안하다'], you:['有','yǒu','요우',[3],'있다'], hen:['很','hěn','헌',[3],'매우'], duo:['多','duō','둬',[1],'많다'], gongzuo:['工作','gōngzuò','궁|쭤',[1,4],'일'],
@@ -55,8 +55,10 @@ const ITEMS = [
   {id:'q1', title:'회의 자료 준비를 부탁받았을 때',
    q:S('회의 자료 준비 좀 도와줘.', 'ni', 'bang', 'wo', '/', 'zhunbei', 'huiyi', 'ziliao', 'ba', '。'),
    a:[S('좋아, 문제없어.', 'haode', '，', 'mei', 'wenti', '。'),
-      S('다 준비하면 자료를 네 책상 위에 놓아둘게.', 'zhunbei', 'haoC', 'yihou', '，', 'wo', 'ba3', 'ziliao', '/', 'fang', 'zai', 'ni', 'de', 'zhuozi', 'shang', '。')],
-   note:'bāng + 사람 + 동작 = ‘(누가) ~하는 것을 돕다’. 동작 뒤 hǎo는 ‘다 ~하다(완성)’, yǐhòu는 ‘~한 뒤에’. bǎ + 물건 + fàng zài + 장소 = ‘~을 …에 놓다’.'},
+      S('준비가 끝나면 자료를 책상 위에 놓아둘게.', 'zhunbei', 'wan', 'yihou', '，', 'wo', 'ba3', 'ziliao', '/', 'fang', 'zai', 'zhuozi', 'shang4', 'ba', '。')],
+   alt:[{s:S('다 준비하면 자료를 네 책상 위에 놓아둘게.', 'zhunbei', 'haoC', 'yihou', '，', 'wo', 'ba3', 'ziliao', '/', 'fang', 'zai', 'ni', 'de', 'zhuozi', 'shang', '。'),
+         why:'‘다 준비되면’은 회화에서 wán보다 hǎo를 더 자주 써요. nǐ de(네)를 넣으면 어디에 둘지 더 분명해요. 명사 뒤 shang은 가볍게(경성) 읽어도 돼요.'}],
+   note:'bāng + 사람 + 동작 = ‘(누가) ~하는 것을 돕다’. 동작 뒤 wán은 ‘다 ~하다(끝내다)’, yǐhòu는 ‘~한 뒤에’. bǎ + 물건 + fàng zài + 장소 = ‘~을 …에 놓다’.'},
   {id:'q2', title:'번역 부탁을 정중하게 거절할 때',
    q:S('회의 자료를 준비해야 하는데, 번역 좀 도와줄 수 있어?', 'wo', 'yao', 'zhunbei', 'huiyi', 'ziliao', '，', 'ni', 'neng', 'bang', 'wo', 'fanyi', 'ma', '？'),
    a:[S('정말 미안해. 일이 많아서 도와줄 수가 없어.', 'feichang', 'baoqian', '，', 'wo', 'you', 'hen', 'duo', 'gongzuo', '，', 'bu', 'neng', 'bang', 'ni', '。'),
@@ -66,17 +68,21 @@ const ITEMS = [
    q:S('오늘 신문이 어디 있는지 알아?', 'ni', 'zhidao', '/', 'jintian', 'de', 'baozhi', 'zai', 'nar', 'ma', '？'),
    a:[S('모르겠어. 내가 같이 찾아볼게.', 'bu', 'zhidao', '，', 'wo', 'bang', 'ni', 'zhaozhao', 'ba', '。'),
       S('봐, 신문이 책상 위에 있어.', 'ni', 'kan', '，', 'baozhi', 'zai', 'zhuozi', 'shang', '。')],
-   note:'nǐ zhīdào + 궁금한 내용 + ma? = ‘~인지 알아?’. 대답은 zhīdào / bù zhīdào로 시작해요. zhǎozhao는 ‘한번 찾아보다’.'},
+   note:'nǐ zhīdào + 궁금한 내용 + ma? = ‘~인지 알아?’. 대답은 zhīdào / bù zhīdào로 시작해요. zhǎozhao는 ‘한번 찾아보다’. 회화에서는 zhīdào의 뒤 음절을 가볍게 zhīdao로도 읽어요.'},
   {id:'q4', title:'테니스 약속을 잡을 때',
    q:S('내일 같이 테니스 치는 게 어때?', 'mingtian', 'yiqi', 'da', 'wangqiu', '/', 'zenmeyang', '？'),
    a:[S('좋은 생각이야!', 'hao', 'zhuyi', '！'),
       S('내일 오후 두 시에 운동장 입구에서 만나자. 꼭 만나!', 'mingtian', 'xiawu', 'liang', 'dian', '/', 'zai', 'yundongchang', 'menkou', '/', 'jian', 'ba', '，', 'bujianbusan', '！')],
-   note:'yìqǐ + 동작 + zěnmeyàng? = ‘같이 ~하는 게 어때?’. 약속은 시간 → zài + 장소 → jiàn ba 순서. 2시는 èr이 아니라 liǎng. bú jiàn bú sàn은 ‘만날 때까지 기다릴게(꼭 만나)’.'},
+   note:'yìqǐ + 동작 + zěnmeyàng? = ‘같이 ~하는 게 어때?’. 약속은 시간 → zài + 장소 → jiàn ba 순서. 2시는 èr이 아니라 liǎng. bú jiàn bú sàn은 ‘만날 때까지 기다릴게(꼭 만나)’. hǎo zhǔyi의 zhǔyi는 회화에서 zhúyi로도 읽어요.'},
   {id:'q5', title:'우산을 찾으며 되물을 때',
    q:S('뭘 찾고 있어?', 'ni', 'zai', 'zhao', 'shenme', '？'),
-   a:[S('우산을 찾고 있어. 일기예보에서 오늘 비가 온대.', 'wo', 'zai', 'zhao', 'yusan', '。', 'tianqi', 'yubao', 'shuo', '，', 'jintian', 'hui', 'xiayu', '。'),
-      S('내 우산 봤어?', 'ni', 'kanjian', '/', 'wo', 'de', 'yusan', 'le', 'ma', '？')],
-   note:'zài + 동작 = ‘~하는 중’. 앞으로 일어날 일은 huì(~할 것이다)를 붙여요. kànjiàn … le ma? = ‘~ 봤어?’ — le는 목적어 뒤, ma 앞.'},
+   a:[S('우산을 찾고 있어. 일기예보에서 오늘 비가 온다고 했어.', 'wo', 'zai', 'zhao', 'yusan', '。', 'tianqi', 'yubao', 'shuo', '，', 'jintian', 'xiayu', '。'),
+      S('우산 봤어?', 'ni', 'kanjian', 'yusan', 'le', 'ma', '？')],
+   alt:[{s:S('우산을 찾고 있어. 일기예보에서 오늘 비가 올 거래.', 'wo', 'zai', 'zhao', 'yusan', '。', 'tianqi', 'yubao', 'shuo', '，', 'jintian', 'hui', 'xiayu', '。'),
+         why:'앞으로 올 비라서 huì(~할 것이다)를 넣으면 뜻이 더 정확해요.'},
+        {s:S('내 우산 봤어?', 'ni', 'kanjian', '/', 'wo', 'de', 'yusan', 'le', 'ma', '？'),
+         why:'내 우산을 찾는 상황이라 wǒ de(내)를 넣으면 더 자연스러워요.'}],
+   note:'zài + 동작 = ‘~하는 중’. kànjiàn … le ma? = ‘~ 봤어?’ — le는 목적어 뒤, ma 앞.'},
 ];
 
 /* ===== 패턴 ===== */
@@ -97,7 +103,7 @@ const PATTERNS = [
   {t:'~을 …에 놓다', f:'bǎ + 물건 + fàng zài + 장소', d:'물건을 어디에 두는지 말할 때 쓰는 bǎ 문장.', ex:[it(0).a[1]]},
   {t:'~인지 알아?', f:'nǐ zhīdào + 궁금한 내용 + ma?', d:'대답은 zhīdào / bù zhīdào로 시작해요.', ex:[it(2).q, it(2).a[0]]},
   {t:'~했어?', f:'동작 + 목적어 + le ma?', d:'le는 목적어 뒤, ma 바로 앞.', ex:[it(4).a[1]]},
-  {t:'앞으로 ~할 거야', f:'huì + 동작', d:'날씨·예정처럼 앞으로 일어날 일. jīntiān huì xiàyǔ = 오늘 비가 올 거래.', ex:[it(4).a[0]], tag:'추가'},
+  {t:'앞으로 ~할 거야', f:'huì + 동작', d:'날씨·예정처럼 앞으로 일어날 일. jīntiān huì xiàyǔ = 오늘 비가 올 거래.', ex:[it(4).alt[0].s], tag:'추가'},
 ];
 
 const prog = T.progress('p3'), wprog = T.progress('p3w');
@@ -108,16 +114,22 @@ const view = $('#view');
 /* ===== 조각 ===== */
 const sayBlock = (s, label, open) => '<p class="small muted" style="margin:12px 0 0">' + label + '</p><p class="ko" style="margin:0">' + esc(s.ko) + '</p>' + T.revealHTML(T.sayHTML(s), open);
 /* ===== 학습 ===== */
+let onlyWrong = false, wordsWrong = false;
 function viewLearn(){
   const done = prog.count(ITEMS.map(x => x.id));
   let h = '<div class="card" id="statcard"><div class="row"><div class="stat"><b>' + done + '</b><span class="muted">/ ' + ITEMS.length + '문항 외움</span></div><span class="spacer"></span><button class="btn soft" type="button" data-go="exam">⏱ 실전 연습</button></div><div class="progress" style="margin-top:10px"><i style="width:' + (done / ITEMS.length * 100) + '%"></i></div>' +
-    '<div class="tip" style="background:var(--brand-soft)"><b style="color:var(--brand-text)">답변 공식</b><span>① 반응 한마디(hǎo de / duìbuqǐ / bù zhīdào) + ② 구체적인 정보 한두 문장(시간·장소·이유). 15초면 두 문장이 딱 좋아요.</span></div></div>';
-  ITEMS.forEach((x, i) => {
+    '<!--wrong--><div class="tip" style="background:var(--brand-soft)"><b style="color:var(--brand-text)">답변 공식</b><span>① 반응 한마디(hǎo de / duìbuqǐ / bù zhīdào) + ② 구체적인 정보 한두 문장(시간·장소·이유). 15초면 두 문장이 딱 좋아요.</span></div></div>';
+  const wrongN = ITEMS.filter(x => T.markState('p3', x.id) === 'wrong').length;
+  h = h.replace('<!--wrong-->', '<div class="row" style="margin-top:10px">' + T.wrongToggle(onlyWrong, wrongN) + '</div>');
+  const list = onlyWrong ? ITEMS.filter(x => T.markState('p3', x.id) === 'wrong') : ITEMS;
+  if (!list.length) h += T.emptyWrong;
+  list.forEach(x => { const i = ITEMS.indexOf(x);
     const on = prog.has(x.id);
     h += '<article class="card' + (on ? ' done' : '') + '" data-q="' + x.id + '"><div class="card-head"><span class="badge">문항 ' + (i + 1) + '</span><span class="label">' + esc(x.title) + '</span>' + T.markBtns('p3', x.id) + '</div>' +
       '<p class="small muted" style="margin:0">질문 — 중국어로 말해 보세요</p><p class="ko" style="margin:0">' + esc(x.q.ko) + '</p>' + T.revealHTML(T.sayHTML(x.q)) +
       sayBlock(x.a[0], '답변 ① 반응') + sayBlock(x.a[1], '답변 ② 이어서') +
       '<div class="tip"><b>TIP</b><span>' + esc(x.note) + '</span></div>' +
+      (x.alt ? '<details class="more"><summary>더 자연스러운 표현 (추천)</summary><p class="small muted" style="margin:6px 0 0">교재 문장이 기본이에요. 아래는 회화에서 더 자연스럽게 쓰는 말이에요.</p>' + x.alt.map(a => '<div style="margin-top:10px"><p class="ko" style="margin:0">' + esc(a.s.ko) + '</p><div class="reveal open" style="margin-top:4px">' + T.sayHTML(a.s) + '</div><p class="small muted" style="margin:4px 0 0">💡 ' + esc(a.why) + '</p></div>').join('') + '</details>' : '') +
       (() => { const ks = [...new Set([x.q, ...x.a].flatMap(s => s.words))]; return '<details class="more"><summary>단어 (' + ks.length + ')</summary><div class="words">' + ks.map(k => T.wordHTML(W[k])).join('') + '</div></details>'; })() + '</article>';
   });
   view.innerHTML = h;
@@ -134,11 +146,15 @@ function viewPattern(){
 /* ===== 단어 ===== */
 let wmode = 'list', deck = [], dpos = 0;
 function viewWords(){
-  const ids = WORDS.map(x => 'w:' + x[0]);
+  const wrongWords = WORDS.filter(([k]) => T.markState('p3w', 'w:' + k) === 'wrong');
+  const shown = wordsWrong ? wrongWords : WORDS;
+  const ids = shown.map(x => 'w:' + x[0]);
   let h = '<div class="row" style="margin-top:14px"><span class="seg" id="wmode"><button type="button" data-v="list" aria-pressed="' + (wmode === 'list') + '">목록</button><button type="button" data-v="card" aria-pressed="' + (wmode === 'card') + '">카드 넘기기</button></span><span class="spacer"></span><span class="small muted">외운 단어 ' + wprog.count(ids) + ' / ' + ids.length + '</span></div>';
-  if (wmode === 'list') h += '<div class="card"><div class="words">' + WORDS.map(([k, wd]) => T.wordHTML(wd, T.markBtns('p3w', 'w:' + k))).join('') + '</div><p class="small muted" style="margin-bottom:0">단어를 누르면 예문과 비슷한 말·반대말이 나와요. ✓ 외웠어요 · ✗ 틀렸어요</p></div>';
+  h += '<div class="chips">' + T.wrongToggle(wordsWrong, wrongWords.length).replace('data-wrongonly', 'data-wordswrong') + '</div>';
+  if (!shown.length) h += T.emptyWrong;
+  else if (wmode === 'list') h += '<div class="card"><div class="words">' + shown.map(([k, wd]) => T.wordHTML(wd, T.markBtns('p3w', 'w:' + k))).join('') + '</div><p class="small muted" style="margin-bottom:0">단어를 누르면 예문과 비슷한 말·반대말이 나와요. ✓ 외웠어요 · ✗ 틀렸어요</p></div>';
   else {
-    if (!deck.length) { deck = ids.slice().sort(() => Math.random() - .5); dpos = 0; }
+    if (!deck.length || !deck.every(id => ids.includes(id))) { deck = ids.slice().sort(() => Math.random() - .5); dpos = 0; }
     if (dpos >= deck.length) h += '<div class="card center"><h3>한 바퀴 끝! 👏</h3><button class="btn primary" type="button" id="again">다시 섞어서 시작</button></div>';
     else {
       const wd = W[deck[dpos].slice(2)];
@@ -201,14 +217,14 @@ function go(t){
   if (exam.running) { T.toast('실전 연습 중이에요. ‘그만하기’를 먼저 눌러 주세요.'); T.tabs($('#tabs'), TABS, tab, go); return; }
   tab = t; T.save('tsc-p3-tab', t); T.tabs($('#tabs'), TABS, t, go); VIEWS[t]();
 }
-view.addEventListener('click', e => { const g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go); scrollTo({top: 0}); } });
+view.addEventListener('click', e => { if (e.target.closest('[data-wrongonly]')) { onlyWrong = !onlyWrong; VIEWS[tab](); return; } if (e.target.closest('[data-wordswrong]')) { wordsWrong = !wordsWrong; deck = []; VIEWS[tab](); return; } const g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go); scrollTo({top: 0}); } });
 document.addEventListener('tsc:settings', () => { if (tab !== 'exam') VIEWS[tab](); });
 T.onMark = () => {
   summary();
   if (tab === 'learn') { const el = $('#statcard'); if (el) { const d = prog.count(ITEMS.map(x => x.id)); el.querySelector('.stat b').textContent = d; el.querySelector('.progress i').style.width = (d / ITEMS.length * 100) + '%'; } }
   if (tab === 'words' && wmode === 'list') viewWords();
 };
-T.exampleSource = () => [...ITEMS.flatMap(x => [x.q, ...x.a]), ...Object.values(NEW)];
+T.exampleSource = () => [...ITEMS.flatMap(x => [x.q, ...x.a, ...(x.alt || []).map(a => a.s)]), ...Object.values(NEW)];
 summary();
 go(tab);
 </script>
