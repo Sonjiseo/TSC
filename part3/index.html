@@ -8,13 +8,14 @@
 <link rel="stylesheet" href="../assets/app.css">
 <script src="../assets/app.js"></script>
 <script src="../assets/words.js"></script>
+<script src="more.js"></script>
 </head>
 <body class="has-bottom">
 <main class="wrap">
   <section class="hero">
     <div class="eyebrow">TSC PART 3</div>
     <h1>3부분 빠르게 답하기</h1>
-    <p>5문항 · 준비 2초 · 답변 15초. 상대 말에 <b>반응 한마디 + 구체적인 한두 문장</b>으로 답해요. (제안·부탁 · 경험·안부·계획)</p>
+    <p>5문항 · 준비 2초 · 답변 15초. 상대 말에 <b>반응 한마디 + 구체적인 한두 문장</b>으로 답해요. 교재 단원 6개: 제안·부탁 · 경험·안부·계획 · 쇼핑 · 학교·회사 · 취미·취향 · 교통·건강·식당</p>
   </section>
   <nav class="tabs bottom" id="tabs" aria-label="학습 메뉴"></nav>
   <section id="view" aria-live="polite"></section>
@@ -82,6 +83,11 @@ const WX = {yijing:['已经','yǐjīng','이|징',[3,1],'이미, 벌써'], haiM:
   ruguo:['如果','rúguǒ','루|궈',[2,3],'만약 ~라면'], jiu:['就','jiù','지오우',[4],'(그러면) 바로'], jia:['家','jiā','자',[1],'집'], kong:['空','kòng','쿵',[4],'틈, 시간'], lai:['来','lái','라이',[2],'오다'],
   wanr:['玩儿','wánr','왈',[2],'놀다'], ranhou:['然后','ránhòu','란|허우',[2,4],'그다음에'], yinhang:['银行','yínháng','인|항',[2,2],'은행'], chaoshi:['超市','chāoshì','차오|스',[1,4],'슈퍼마켓']};
 const S = (ko, ...keys) => { const s = T.sentence(keys.map(k => W[k] || WX[k] || k), ko); s.words = keys.filter(k => W[k] || WX[k]); return s; };
+/* 추가 단원 단어(more.js, tools/part3/build.py로 생성) */
+Object.assign(W, window.P3MORE.W);
+const fromSpec = it => { const mk = ([ko, keys]) => S(ko, ...keys);
+  return Object.assign({id: it.id, title: it.title, q: mk(it.q), a: it.a.map(mk), note: it.note}, it.alt ? {alt: it.alt.map(a => ({s: mk(a.s), why: a.why}))} : {}); };
+const MORE = Object.fromEntries(window.P3MORE.units.map(u => [u.id, u]));
 
 /* ===== 문항 (교재 23쪽) ===== */
 const ITEMS23 = [
@@ -170,7 +176,8 @@ const U2 = [
 ];
 const UNITS = [
   {id:'u1', name:'01 제안·부탁', items:[...ITEMS23, ...U1]},
-  {id:'u2', name:'02 경험·안부·계획', items:U2},
+  {id:'u2', name:'02 경험·안부·계획', items:[...U2, ...MORE.u2.items.map(fromSpec)]},
+  ...window.P3MORE.units.filter(u => u.name).map(u => ({id: u.id, name: u.name, items: u.items.map(fromSpec)})),
 ];
 const ALL = UNITS.flatMap(u => u.items);
 const unitOf = x => UNITS.find(u => u.items.includes(x));
@@ -184,6 +191,7 @@ const NEW = {
   look:S('좀 봐 줄 수 있어?', 'ni', 'neng', 'bang', 'wo', 'kankan', 'ma', '？'),
 };
 const it = i => ITEMS23[i];
+const q3 = id => ALL.find(x => x.id === id);
 /* 추가 패턴 예문 (교재 밖, HSK 3~4급 기본 문법) */
 const NX = {
   chileQ:S('밥 먹었어?', 'ni', 'chifan', 'le', 'ma', '？'),
@@ -214,6 +222,16 @@ const PATTERNS = [
   {t:'왜냐하면', f:'yīnwèi + 이유', d:'이유를 덧붙이면 답변이 길어져요.', ex:[U2[0].a[0]]},
   {t:'~하면서 ~하다', f:'yìbiān A, yìbiān B', d:'두 동작을 동시에 할 때.', ex:[U2[3].a[0]]},
   {t:'~뿐만 아니라 ~도', f:'búdàn A, érqiě B', d:'좋은 점을 두 가지 말할 때.', ex:[U2[4].a[0]]},
+  /* 03~06 단원 교재 문장에서 뽑은 패턴 */
+  {t:'A하고 B하다 (두 가지 장점)', f:'yòu + 형용사 A + yòu + 형용사 B', d:'좋은 점 두 가지를 한 번에 말할 때. 교통·식당·물건 칭찬에 자주 써요.', ex:[q3('u6q2').a[0], q3('u3q7').a[0]]},
+  {t:'A야, 아니면 B야?', f:'A + háishi + B?', d:'둘 중 하나를 고르게 하는 질문. 대답은 고른 것을 바로 말해요(ma를 붙이지 않아요).', ex:[q3('u3q2').q, q3('u5q4').q, q3('u5q4').a[0]]},
+  {t:'~ 주세요 (살 때·주문할 때)', f:'gěi wǒ lái + 수량 + 물건, zài lái …', d:'가게·식당에서 원하는 것을 말할 때. 이어서 yígòng duōshao qián?으로 값을 물어요.', ex:[q3('u3q1').a[0], q3('u3q8').a[0]]},
+  {t:'언제(어디서) ~했어? — 지난 일', f:'shénme shíhou / zài + 장소 + 동사 + de', d:'이미 한 일의 때·장소를 물을 때 동사 뒤에 de. 대답도 qùnián mǎi de처럼 de로 끝내요.', ex:[q3('u3q6').q, q3('u3q6').a[0], q3('u2q7').q]},
+  {t:'~해 보이다', f:'kàn qǐlai + 형용사', d:'눈으로 보고 느낀 인상을 말할 때.', ex:[q3('u4q10').q, q3('u3q5').a[0]]},
+  {t:'~하지 마', f:'bié + 동작', d:'걱정·긴장하는 상대를 달랠 때. bié dānxīn(걱정 마), bié jǐnzhāng(긴장하지 마).', ex:[q3('u4q9').a[0], q3('u4q5').a[0]]},
+  {t:'가깝다 — 걸어서 ~이면 도착', f:'A lí B hěn jìn, zǒulù + 시간 + jiù dào le', d:'거리와 걸리는 시간을 함께 말해요. jiù는 ‘금방, 바로’ 느낌.', ex:[q3('u6q2').a[0], q3('u6q4').a[0]]},
+  {t:'툭하면 ~하다', f:'dòngbudòng jiù + 동작', d:'자주 생기는 불편한 일을 말할 때(입말).', ex:[q3('u4q1').a[0], q3('u3q6').a[0]]},
+  {t:'~하기만 하면 바로', f:'yī + A, jiù + B', d:'A만 생기면 늘 B를 한다는 습관. yī는 뒤 성조에 따라 yì·yí로 읽어요.', ex:[q3('u5q4').a[0]]},
   {t:'앞으로 ~할 거야', f:'huì + 동작', d:'날씨·예정처럼 앞으로 일어날 일. jīntiān huì xiàyǔ = 오늘 비가 올 거래.', ex:[it(4).alt[0].s], tag:'추가'},
   {t:'벌써 ~했어 / 아직 안 했어', f:'yǐjīng + 동작 + le / hái méi + 동작 + ne', d:'‘~했어?’ 질문에 바로 답하는 틀. 안 했을 때는 le를 빼고 끝에 ne를 붙여요. (HSK 3급 문법)', ex:[NX.chileQ, NX.yijing, NX.haimei], tag:'추가'},
   {t:'~해 본 적 있다', f:'동작 + guo', d:'경험을 물으면 동사 뒤에 guo. 없으면 méi(yǒu) + 동작 + guo. (HSK 2~3급 문법)', ex:[NX.guoQ, NX.guoA, NX.guoN], tag:'추가'},
@@ -293,17 +311,21 @@ function viewWords(){
 
 /* ===== 실전 ===== */
 const exam = {running: false, results: []};
+let examAll = false;
+const examPool = () => examAll ? ALL : ITEMS;
 function viewExam(){
-  view.innerHTML = '<div class="card"><h3 style="margin-top:0">⏱ 실전처럼 연습하기</h3><p class="small muted">실제 시험과 같아요: <b>' + esc(UNITS.find(u => u.id === unit).name) + '</b> ' + ITEMS.length + '문항 · 질문을 읽고 <b>준비 2초</b>, <b>15초 동안 답변</b>.</p>' +
+  view.innerHTML = '<div class="chips" style="margin-top:14px">' + UNITS.map(u => '<button class="chip" type="button" data-unit="' + u.id + '" aria-pressed="' + (!examAll && u.id === unit) + '">' + esc(u.name) + '</button>').join('') + '<button class="chip" type="button" data-examall aria-pressed="' + examAll + '">전체 단원</button></div>' +
+    '<div class="card"><h3 style="margin-top:0">⏱ 실전처럼 연습하기</h3><p class="small muted">실제 시험처럼 <b>' + (examAll ? '전체 단원' : esc(UNITS.find(u => u.id === unit).name)) + '</b>에서 <b>5문항</b>을 무작위로 골라요. 질문을 읽고 <b>준비 2초</b>, <b>15초 동안 답변</b>.</p>' +
     '<button class="btn primary big" type="button" id="start" style="width:100%">시작하기</button></div>' + (exam.results.length ? resultsHTML() : '');
   $('#start').onclick = runExam; bindResults();
 }
 async function runExam(){
   exam.results = []; exam.running = true;
   let cancelled = false, cd = null;
-  for (let i = 0; i < ITEMS.length && !cancelled; i++) {
-    const x = ITEMS[i];
-    view.innerHTML = '<div class="card center"><div class="card-head"><span class="badge">문항 ' + (i + 1) + ' / ' + ITEMS.length + '</span><span class="label"></span><button class="btn ghost" type="button" id="quit">그만하기</button></div>' +
+  const QS5 = examPool().slice().sort(() => Math.random() - .5).slice(0, 5);
+  for (let i = 0; i < QS5.length && !cancelled; i++) {
+    const x = QS5[i];
+    view.innerHTML = '<div class="card center"><div class="card-head"><span class="badge">문항 ' + (i + 1) + ' / ' + QS5.length + '</span><span class="label"></span><button class="btn ghost" type="button" id="quit">그만하기</button></div>' +
       T.sayHTML(x.q) + '<p class="small muted" style="margin:4px 0 0">' + esc(x.q.ko) + '</p>' +
       '<div id="tm"></div></div>';
     $('#quit').onclick = () => { cancelled = true; cd && cd.cancel(); };
@@ -335,7 +357,7 @@ function go(t){
   if (exam.running) { T.toast('실전 연습 중이에요. ‘그만하기’를 먼저 눌러 주세요.'); T.tabs($('#tabs'), TABS, tab, go); return; }
   tab = t; T.save('tsc-p3-tab', t); T.tabs($('#tabs'), TABS, t, go); VIEWS[t]();
 }
-view.addEventListener('click', e => { if (e.target.closest('[data-wrongonly]')) { onlyWrong = !onlyWrong; VIEWS[tab](); return; } const ub = e.target.closest('[data-unit]'); if (ub) { unit = ub.dataset.unit; T.save('tsc-p3-unit', unit); ITEMS = UNITS.find(u => u.id === unit).items; onlyWrong = false; VIEWS[tab](); return; } if (e.target.closest('[data-wordswrong]')) { wordsWrong = !wordsWrong; deck = []; VIEWS[tab](); return; } const g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go); scrollTo({top: 0}); } });
+view.addEventListener('click', e => { if (e.target.closest('[data-wrongonly]')) { onlyWrong = !onlyWrong; VIEWS[tab](); return; } if (e.target.closest('[data-examall]')) { examAll = true; exam.results = []; VIEWS[tab](); return; } const ub = e.target.closest('[data-unit]'); if (ub) { examAll = false; exam.results = []; unit = ub.dataset.unit; T.save('tsc-p3-unit', unit); ITEMS = UNITS.find(u => u.id === unit).items; onlyWrong = false; VIEWS[tab](); return; } if (e.target.closest('[data-wordswrong]')) { wordsWrong = !wordsWrong; deck = []; VIEWS[tab](); return; } const g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go); scrollTo({top: 0}); } });
 document.addEventListener('tsc:settings', () => { if (tab !== 'exam') VIEWS[tab](); });
 T.onMark = () => {
   summary();
