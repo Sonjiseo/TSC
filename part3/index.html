@@ -82,7 +82,8 @@ const WX = {yijing:['已经','yǐjīng','이|징',[3,1],'이미, 벌써'], haiM:
   guo:['过','guo','궈',[0],'~한 적 있다 (경험)'], zhongguo:['中国','Zhōngguó','중|궈',[1,2],'중국'], liang2:['两','liǎng','량',[3],'둘'], ci:['次','cì','츠',[4],'번, 회'],
   ruguo:['如果','rúguǒ','루|궈',[2,3],'만약 ~라면'], jiu:['就','jiù','지오우',[4],'(그러면) 바로'], jia:['家','jiā','자',[1],'집'], kong:['空','kòng','쿵',[4],'틈, 시간'], lai:['来','lái','라이',[2],'오다'],
   wanr:['玩儿','wánr','왈',[2],'놀다'], ranhou:['然后','ránhòu','란|허우',[2,4],'그다음에'], yinhang:['银行','yínháng','인|항',[2,2],'은행'], chaoshi:['超市','chāoshì','차오|슬',[1,4],'슈퍼마켓']};
-const S = (ko, ...keys) => { const s = T.sentence(keys.map(k => W[k] || WX[k] || k), ko); s.words = keys.filter(k => W[k] || WX[k]); return s; };
+const S = (ko, ...keys) => { const s = T.sentence(keys.map(k => W[k] || WX[k] || k), ko); s.words = keys.filter(k => W[k] || WX[k]); s.keys = keys; return s; };
+const joinS = (...ss) => S(ss.map(x => x.ko).join(' '), ...ss.flatMap(x => x.keys));
 /* 추가 단원 단어(more.js, tools/part3/build.py로 생성) */
 Object.assign(W, window.P3MORE.W);
 const fromSpec = it => { const mk = ([ko, keys]) => S(ko, ...keys);
@@ -123,6 +124,8 @@ const ITEMS23 = [
          why:'내 우산을 찾는 상황이라 wǒ de(내)를 넣으면 더 자연스러워요.'}],
    note:'zài + 동작 = ‘~하는 중’. kànjiàn … le ma? = ‘~ 봤어?’ — le는 목적어 뒤, ma 앞.'},
 ];
+/* 다른 문항과 같은 모양으로: 답변 두 문장을 하나의 모범 답변으로 합친다 (패턴 예문은 x.parts로 한 문장씩 쓴다) */
+ITEMS23.forEach(x => { x.parts = x.a; if (x.a.length > 1) x.a = [joinS(...x.a)]; });
 
 /* 01 제안·부탁 (교재 단원) */
 const U1 = [
@@ -207,15 +210,15 @@ const NX = {
 };
 const PATTERNS = [
   {t:'부탁하기', f:'nǐ (néng) bāng wǒ + 동작 + ba / ma?', d:'bāng 뒤에 ‘누구를’, 그다음 ‘무엇을’. ba는 부드러운 부탁, néng … ma?는 ‘~해 줄 수 있어?’', ex:[it(0).q, NEW.look]},
-  {t:'받아들이기', f:'hǎo de, méi wèntí. / hǎo zhǔyi! / hǎo a', d:'부탁에는 hǎo de, méi wèntí, 제안에는 hǎo zhǔyi · hǎo a로 바로 반응하고, 이어서 구체적인 말을 덧붙여요.', ex:[it(0).a[0], it(3).a[0], NEW.when]},
-  {t:'거절하기', f:'duìbuqǐ / fēicháng bàoqiàn + 이유 + bù néng …', d:'사과 → 이유 → bù néng 순서. 이유는 hěn máng(바쁘다), gōngzuò hěn duō(일이 많다)처럼 짧게.', ex:[it(1).a[0], NEW.refuse], tag:'추가'},
-  {t:'한번 ~해 보다', f:'동사 겹치기: wènwen · zhǎozhao · kànkan', d:'한 글자 동사를 두 번 쓰면 ‘한번 가볍게 ~해 보다’. 두 번째 음절은 경성으로 가볍게.', ex:[it(1).a[1], it(2).a[0], NEW.look]},
+  {t:'받아들이기', f:'hǎo de, méi wèntí. / hǎo zhǔyi! / hǎo a', d:'부탁에는 hǎo de, méi wèntí, 제안에는 hǎo zhǔyi · hǎo a로 바로 반응하고, 이어서 구체적인 말을 덧붙여요.', ex:[it(0).parts[0], it(3).parts[0], NEW.when]},
+  {t:'거절하기', f:'duìbuqǐ / fēicháng bàoqiàn + 이유 + bù néng …', d:'사과 → 이유 → bù néng 순서. 이유는 hěn máng(바쁘다), gōngzuò hěn duō(일이 많다)처럼 짧게.', ex:[it(1).parts[0], NEW.refuse], tag:'추가'},
+  {t:'한번 ~해 보다', f:'동사 겹치기: wènwen · zhǎozhao · kànkan', d:'한 글자 동사를 두 번 쓰면 ‘한번 가볍게 ~해 보다’. 두 번째 음절은 경성으로 가볍게.', ex:[it(1).parts[1], it(2).parts[0], NEW.look]},
   {t:'제안하기', f:'(시간) + yìqǐ + 동작 + zěnmeyàng?', d:'‘같이 ~하는 게 어때?’ yī는 3성 앞이라 yì로 읽어요.', ex:[it(3).q]},
-  {t:'약속 정하기', f:'시간 + zài + 장소 + jiàn ba', d:'중국어는 시간 → 장소 → 동작 순서. 2시 = liǎng diǎn.', ex:[it(3).a[1]]},
-  {t:'~하는 중', f:'zài + 동작', d:'지금 하고 있는 일을 말할 때. Nǐ zài zhǎo shénme? → Wǒ zài zhǎo …', ex:[it(4).q, it(4).a[0]]},
-  {t:'~을 …에 놓다', f:'bǎ + 물건 + fàng zài + 장소', d:'물건을 어디에 두는지 말할 때 쓰는 bǎ 문장.', ex:[it(0).a[1]]},
-  {t:'~인지 알아?', f:'nǐ zhīdào + 궁금한 내용 + ma?', d:'대답은 zhīdào / bù zhīdào로 시작해요.', ex:[it(2).q, it(2).a[0]]},
-  {t:'~했어?', f:'동작 + 목적어 + le ma?', d:'le는 목적어 뒤, ma 바로 앞.', ex:[it(4).a[1]]},
+  {t:'약속 정하기', f:'시간 + zài + 장소 + jiàn ba', d:'중국어는 시간 → 장소 → 동작 순서. 2시 = liǎng diǎn.', ex:[it(3).parts[1]]},
+  {t:'~하는 중', f:'zài + 동작', d:'지금 하고 있는 일을 말할 때. Nǐ zài zhǎo shénme? → Wǒ zài zhǎo …', ex:[it(4).q, it(4).parts[0]]},
+  {t:'~을 …에 놓다', f:'bǎ + 물건 + fàng zài + 장소', d:'물건을 어디에 두는지 말할 때 쓰는 bǎ 문장.', ex:[it(0).parts[1]]},
+  {t:'~인지 알아?', f:'nǐ zhīdào + 궁금한 내용 + ma?', d:'대답은 zhīdào / bù zhīdào로 시작해요.', ex:[it(2).q, it(2).parts[0]]},
+  {t:'~했어?', f:'동작 + 목적어 + le ma?', d:'le는 목적어 뒤, ma 바로 앞.', ex:[it(4).parts[1]]},
   {t:'좀 ~하다', f:'동작 + yíxià', d:'부탁·권유를 부드럽게 해요. xiūxi yíxià = xiūxi xiūxi(좀 쉬다).', ex:[U1[0].a[0]]},
   {t:'다 ~하고 나서', f:'동작 + wán + (목적어) + yǐhòu', d:'한 가지를 마친 뒤 다음 일을 말할 때.', ex:[U1[4].a[0], U2[2].a[0]]},
   {t:'~할 계획이야', f:'dǎsuan + 동작', d:'계획을 물으면 Wǒ dǎsuan …로 시작해요.', ex:[U2[1].q, U2[1].a[0]]},
