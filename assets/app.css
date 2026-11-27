@@ -217,3 +217,11 @@ img.photo{display:block;width:100%;border-radius:14px;margin-top:10px}
 .word .mark svg{width:15px;height:15px}
 .word:has(.marks){padding-right:76px}
 @media (max-width:520px){.words:has(.marks){grid-template-columns:1fr}}
+
+/* 문장 속 단어: 누르면 뜻 말풍선 */
+.tw{cursor:pointer;border-radius:4px;text-decoration:underline dotted color-mix(in srgb,var(--brand-text) 45%,transparent);text-underline-offset:4px;text-decoration-thickness:1.5px}
+.tw:hover,.tw.on{background:var(--brand-soft)}
+.tw-tip{position:fixed;z-index:70;max-width:min(300px,calc(100vw - 16px));background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 28px rgba(16,24,40,.16);padding:10px 14px}
+.tw-tip .w-py{font-size:18px;color:var(--brand-text);font-weight:650}
+.tw-tip .tw-ko{font-weight:700;margin-top:2px}
+.tw-more{margin-top:8px;border:0;background:var(--brand-soft);color:var(--brand-text);border-radius:10px;padding:6px 10px;font-size:13px;font-weight:650}

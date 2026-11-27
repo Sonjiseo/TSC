@@ -192,6 +192,33 @@ document.addEventListener('click', e => {
   try { T.openWord(JSON.parse(el.dataset.w)); } catch {}
 });
 document.addEventListener('keydown', e => {
-  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('[data-w]')) { e.preventDefault(); e.target.click(); }
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('[data-w], [data-tw]')) { e.preventDefault(); e.target.click(); }
+  if (e.key === 'Escape') closeTip();
 });
+/* 문장 속 단어 → 뜻 말풍선 */
+let tip = null, tipFor = null;
+const closeTip = () => { if (tip) tip.remove(); tip = null; if (tipFor) tipFor.classList.remove('on'); tipFor = null; };
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-tw]');
+  if (tip && tip.contains(e.target)) {
+    if (e.target.closest('[data-more]')) { const info = JSON.parse(tip.dataset.info); closeTip(); T.openWord(info); }
+    return;
+  }
+  if (!el) { closeTip(); return; }
+  if (el.closest('.reveal:not(.open)')) return;
+  if (tipFor === el) { closeTip(); return; }
+  closeTip();
+  let info; try { info = JSON.parse(el.dataset.tw); } catch { return; }
+  tipFor = el; el.classList.add('on');
+  tip = document.createElement('div'); tip.className = 'tw-tip'; tip.setAttribute('role', 'tooltip'); tip.dataset.info = el.dataset.tw;
+  const r = T.relOf(info);
+  tip.innerHTML = '<div class="w-py">' + esc(T.pinyinWithExpanded(info.py)) + '</div>' + (info.hg ? '<div class="hgw">' + T.toneHTML(info.hg, info.parts || []) + '</div>' : '') + '<div class="tw-ko">' + esc(info.ko) + '</div>' +
+    '<button type="button" class="tw-more" data-more>' + (r ? '예문 · 비슷한 말 · 반대말' : '예문 보기') + ' ›</button>';
+  document.body.append(tip);
+  const b = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+  let left = Math.min(Math.max(8, b.left + b.width / 2 - w / 2), innerWidth - w - 8);
+  let top = b.bottom + 8; if (top + h > innerHeight - 8) top = b.top - h - 8;
+  tip.style.left = left + 'px'; tip.style.top = top + 'px';
+});
+addEventListener('scroll', closeTip, {passive: true});
 })();

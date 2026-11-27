@@ -149,7 +149,17 @@ T.sentence = (items, ko) => {
     hgText += (hgText ? ' ' : '') + hgParts[pi++];
   });
   const pyText = py.join(' ').replace(/(^|[.?!] )(\S)/g, (m, a, b) => a + b.toUpperCase());
-  return {hz: hz.join(''), hzHTML: hzHTML.join(''), py: pyText, hg: hgText.replace(/^ /, '').replace(/ \/ ?/g, ' / ').replace(/\s+/g, ' ').trim(), tones, ko};
+  /* 병음 줄의 단어마다 뜻 정보 (눌러서 뜻 보기) */
+  const wl = []; let cap = true;
+  items.forEach((it, i) => {
+    if (it === '/') { wl.push({t: '/'}); return; }
+    if (typeof it === 'string') { if (wl.length) { wl[wl.length - 1].t += PUNCT[it] || it; if (/[。？！]/.test(it)) cap = true; } return; }
+    const [h, p, g, t, k] = it;
+    const chunks = (g || '').split(/[| ]+/).filter(Boolean);
+    const info = {py: p, hg: (g || '').replaceAll('|', ''), parts: chunks.map((c, j) => [c, out[i] ? out[i][j] || 0 : 0]), ko: /[\u4e00-\u9fff]/.test(k || '') ? '' : (k || '')};
+    wl.push({t: cap ? p.replace(/^./, c => c.toUpperCase()) : p, w: info.ko ? info : null}); cap = false;
+  });
+  return {hz: hz.join(''), hzHTML: hzHTML.join(''), py: pyText, hg: hgText.replace(/^ /, '').replace(/ \/ ?/g, ' / ').replace(/\s+/g, ' ').trim(), tones, ko, wl};
 };
 T.hgTones = w => { const t = w[3] ? T.sandhi(w[3]) : []; return w[2].split(/[| ]+/).filter(Boolean).map((c, i) => [c, t[i] || 0]); };
 /* 단어 정보 {py, hg, parts:[[소리,성조]], ko} */
@@ -161,10 +171,40 @@ T.wordHTML = (w, extra) => T.wordChip(T.wordInfo(w), extra);
 /* row: {hz, py, hg, tones:[[소리,성조],...], ko} */
 /* 끊어 읽기: 문장 속 " / " 를 표시용 span으로 */
 T.brk = html => html.replaceAll(' / ', ' <span class="brk" aria-hidden="true">/ </span>');
+const twSpan = (text, info) => '<span class="tw" role="button" tabindex="0" data-tw="' + esc(JSON.stringify(info)) + '">' + text + '</span>';
+/* 단어 사전 (2부분처럼 문자열 문장용): 정규화한 병음 → [정보, ...] */
+T.LEX = {};
+const lexKey = s => (s || '').replace(/\s*\([^)]*\)/g, '').replace(/[’]/g, "'").replace(/[,.?!:;]/g, '').trim().toLowerCase();
+T.addLex = info => { if (!info || !info.py || !info.ko) return; for (const alt of info.py.split(/\s+\/\s+/)) { const k = lexKey(alt); if (!k) continue; const list = T.LEX[k] || (T.LEX[k] = []); if (!list.some(x => x.ko === info.ko)) list.push(info); } };
+/* [병음, 한글(음절은 | 로), 뜻] 목록을 사전에 넣기 */
+T.addLexList = list => list.forEach(([py, hg, ko]) => { const t = T.sandhi(T.tonesOf(py)), ch = hg.split(/[| ]+/).filter(Boolean); T.addLex({py, hg: hg.replaceAll('|', ''), parts: ch.map((c, i) => [c, t[i] || 0]), ko}); });
+const lexInfo = list => list.length === 1 ? list[0] : Object.assign({}, list[0], {ko: list.map(x => x.ko).join(' / ')});
+/* 문자열 병음 문장에서 사전에 있는 단어(1~3 단어 묶음)를 찾아 감싸기 */
+const linkPinyin = (py, expand) => {
+  const toks = []; py.split(' ').forEach(w => { if (w.startsWith('(') && toks.length) toks[toks.length - 1] += ' ' + w; else toks.push(w); });
+  const out = [];
+  for (let i = 0; i < toks.length;) {
+    if (toks[i] === '/') { out.push('<span class="brk" aria-hidden="true">/ </span>'); i++; continue; }
+    let hit = 0;
+    for (let n = Math.min(3, toks.length - i); n >= 1 && !hit; n--) {
+      const grp = toks.slice(i, i + n); if (grp.includes('/')) continue;
+      const list = T.LEX[lexKey(grp.join(' '))];
+      if (list) {
+        const raw = grp.join(' '), m = raw.match(/^(.*?)([,.?!]*)$/);
+        out.push(twSpan(esc(expand ? T.pinyinWithExpanded(m[1]) : m[1]), lexInfo(list)) + esc(m[2])); i += n; hit = n;
+      }
+    }
+    if (!hit) { out.push(esc(expand ? T.pinyinWithExpanded(toks[i]) : toks[i])); i++; }
+  }
+  return out.join(' ').replace(/ <span class="brk"/g, ' <span class="brk"');
+};
 T.sayHTML = (row, opt = {}) => {
   const lines = [];
-  /* 한자는 화면에 보이지 않음 */
-  if (row.py) lines.push('<div class="line py" lang="zh-Latn-pinyin">' + T.brk(esc(opt.noExpand ? row.py : T.pinyinWithExpanded(row.py))) + '</div>');
+  /* 한자는 화면에 보이지 않음. 병음 단어를 누르면 뜻이 나온다 */
+  if (row.wl) {
+    const parts = row.wl.map(tok => tok.t === '/' ? '<span class="brk" aria-hidden="true">/ </span>' : (tok.w ? (() => { const m = tok.t.match(/^(.*?)([,.?!，。？！、]*)$/); return twSpan(esc(T.pinyinWithExpanded(m[1])), tok.w) + esc(m[2]); })() : esc(T.pinyinWithExpanded(tok.t))));
+    lines.push('<div class="line py" lang="zh-Latn-pinyin">' + parts.join(' ') + '</div>');
+  } else if (row.py) lines.push('<div class="line py" lang="zh-Latn-pinyin">' + linkPinyin(row.py, !opt.noExpand) + '</div>');
   if (row.hg) lines.push('<div class="line hg">' + T.brk(row.tones ? T.toneHTML(row.hg, row.tones) : esc(row.hg)) + '</div>');
   return '<div class="say">' + lines.join('') + '</div>';
 };

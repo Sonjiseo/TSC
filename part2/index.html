@@ -210,6 +210,18 @@ T.onMark = () => {
   summary();
   const el = $('#statcard'); if (el && lastProg) { const d = prog.count(lastProg[0]); el.querySelector('.stat b').textContent = d; el.querySelector('.progress i').style.width = (d / lastProg[0].length * 100) + '%'; }
 };
+/* 문장 속 단어 뜻: 단어 풀이·단어장으로 사전 만들기 */
+Object.values(D.gloss).forEach(w => T.addLex({py: w[1], hg: w[2], parts: w[3], ko: w[0]}));
+D.v.forEach(g => g[1].forEach(r => T.addLex({py: r[1], hg: r[2], parts: r[3], ko: r[0]})));
+/* 단어 풀이에 없던 문장 속 단어 */
+T.addLexList([
+  ['wǒ','워','나'], ['nǐ','니','너'], ['nín','닌','당신 (높임말)'], ['zhèr','절','여기'], ['jiā','자','집'], ['hěn','헌','매우'], ['jìn','진','가깝다'], ['hái','하이','아직, 더'],
+  ['tiàowǔ','탸오|우','춤추다'], ['bú shì','부 스','아니다'], ['xiězì','시에|쯔','글씨를 쓰다'], ['huàr','화얼','그림'], ['xǐ wǎn','시 완','설거지하다'],
+  ['tái','타이','대 (기계를 세는 말)'], ['fàngzhe','팡|저','놓여 있다'], ['tiáo','탸오','장, 개 (가늘고 긴 것을 세는 말)'], ['duǒ','둬','송이'], ['shù','슈','나무'], ['píng','핑','병'], ['qiān','쳰','천 (1,000)'],
+  ['wǔshíjiǔ','우|스|지오우','59'], ['wǔshísì','우|스|쓰','54'], ['èrshíjiǔ','얼|스|지오우','29'], ["èrshí'èr",'얼|스|얼','22'],
+  ['diànyǐng','뎬|잉','영화'], ['shāngdiàn','샹|뎬','상점'], ['gōnggòng qìchē','궁|궁 치|처','버스'], ['bǐ','비','~보다 (비교)'], ['zěnmeyàng','전|머|양','어때?'],
+  ['túshūguǎn','투|슈|관','도서관'], ['nánháizi','난|하이|즈','남자아이'], ['yéye','예|예','할아버지'], ['zuǒbian','쭤|볜','왼쪽'],
+]);
 T.exampleSource = () => [...D.patterns, ...D.ex.flat(), ...D.app, ...D.appendix.flat()].map(r => ({py: r[1], hg: r[2], tones: r[3], ko: r[0]}));
 summary();
 go(tab);

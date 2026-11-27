@@ -80,32 +80,7 @@ function customWord(hz, py, hg, ko){
 }
 
 /* ===== 문장 만들기 ===== */
-const PUNCT = {'，':',','。':'.','？':'?','、':',','！':'!'};
-function sentence(items, ko){
-  const hz = [], hzHTML = [], py = [], hgW = [], toneW = [];
-  items.forEach(it => {
-    if (it === '/') { hzHTML.push(' <span class="brk" aria-hidden="true">/</span> '); py.push('/'); hgW.push('/'); toneW.push(null); return; }
-    if (typeof it === 'string') { hz.push(it); hzHTML.push(esc(it)); if (py.length) py[py.length-1] += PUNCT[it] || it; hgW.push(null); toneW.push(null); return; }
-    const [h, p, g, t] = it;
-    hz.push(h); hzHTML.push('<ruby>' + esc(h) + '<rt>' + esc(p) + '</rt></ruby>');
-    py.push(p); hgW.push(g); toneW.push(t);
-  });
-  /* 3성 변조: 문장부호 사이 구간별로 */
-  let seg = [], out = [];
-  const flush = () => { const all = seg.flatMap(i => toneW[i]); const s = T.sandhi(all); let k = 0; seg.forEach(i => { out[i] = toneW[i].map(() => s[k++]); }); seg = []; };
-  toneW.forEach((t, i) => { if (!t) { flush(); out[i] = null; } else seg.push(i); });
-  flush();
-  const hgParts = [], tones = [];
-  hgW.forEach((g, i) => {
-    if (g === null) return;
-    if (g === '/') { hgParts.push('/'); return; }
-    const chunks = g.split(/[| ]+/).filter(Boolean);
-    hgParts.push(g.replaceAll('|', ''));
-    chunks.forEach((c, k) => tones.push([c, out[i] ? out[i][k] || 0 : 0]));
-  });
-  const pyText = py.join(' ').replace(/(^|[.?!] )(\S)/g, (m, a, b) => a + b.toUpperCase());
-  return {hz: hz.join(''), hzHTML: hzHTML.join(''), py: pyText, hg: hgParts.join(' '), tones, ko};
-}
+function sentence(items, ko){ return T.sentence(items, ko); }
 
 /* ===== 내 정보 ===== */
 const josa = (word, a, b) => { const c = (word || '').trim().slice(-1).charCodeAt(0) - 0xAC00; return c >= 0 && c <= 11171 && c % 28 ? a : b; };
@@ -116,7 +91,7 @@ if (me.name && me.name.hz === '李明') { me.name = structuredClone(DEFAULT_ME.n
 const saveMe = () => T.save('tsc-p1-me', me);
 
 function answers(){
-  const nm = customWord(me.name.hz, me.name.py, me.name.hg);
+  const nm = customWord(me.name.hz, me.name.py, me.name.hg, (me.name.ko || '') + ' (이름)');
   const a1 = sentence([W.wo, W.jiao, nm, '。'], '저는 ' + (me.name.ko || me.name.py) + josa(me.name.ko || me.name.py, '이라고', '라고') + ' 합니다.');
   const a2 = sentence([W.wo, W.de, W.shengri, W.shi, '/', ...yearWords(me.y), W.nian, '/', numWord(me.m), W.yue, numWord(me.d), W.hao, '。'], '제 생일은 ' + me.y + '년 ' + me.m + '월 ' + me.d + '일입니다.');
   const fam = FAMILY_ORDER.filter(k => me.family.includes(k));
@@ -127,10 +102,10 @@ function answers(){
     : null;
   let a4;
   if (me.job === 'study') {
-    const sc = customWord(me.school.hz, me.school.py, me.school.hg);
+    const sc = customWord(me.school.hz, me.school.py, me.school.hg, me.school.ko || '학교 이름');
     a4 = sentence([W.wo, W.zai, sc, '/', W.shangxue, '。'], '저는 ' + (me.school.ko || me.school.hz) + '에 다닙니다.');
   } else {
-    const co = me.company === 'custom' ? customWord(me.co.hz, me.co.py, me.co.hg) : COMPANIES[me.company];
+    const co = me.company === 'custom' ? customWord(me.co.hz, me.co.py, me.co.hg, me.co.ko || '회사 이름') : COMPANIES[me.company];
     const dp = DEPTS[me.dept];
     const coKo = me.company === 'custom' ? (me.co.ko || me.co.hz) : co[4];
     a4 = sentence([W.wo, W.zai, co, W.gongsi, ...(dp ? [dp] : []), '/', W.gongzuo, '。'], '저는 ' + coKo + ' ' + (dp ? dp[4] + '에서' : '회사에서') + ' 일합니다.');
@@ -309,6 +284,8 @@ T.onMark = () => {
   if (tab === 'learn') { const el = $('#statcard'); if (el) { const d = prog.count(QS.map(q => q.id)); el.querySelector('.stat b').textContent = d; el.querySelector('.progress i').style.width = (d / QS.length * 100) + '%'; } }
   if (tab === 'words' && wordMode === 'list') viewWords();
 };
+[...Object.values(W), ...Object.values(FAMILY), ...Object.values(COMPANIES), ...Object.values(DEPTS).filter(Boolean)].forEach(w => T.addLex(T.wordInfo(w)));
+T.addLexList([['Shǒu\'ěr Dàxué','서우|얼 다|쉬에','서울대학교'], ['sān','싼','3, 셋']]);
 T.exampleSource = () => [...QS.map(q => q.q), ...answers().filter(Boolean), ...QS.flatMap(q => q.more.map(([hz, py, ko]) => ({py, ko})))];
 summary();
 go(tab);
