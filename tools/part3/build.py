@@ -8,10 +8,14 @@ from py2hg import hangul_word
 import more
 
 dump = json.loads(subprocess.check_output(['node', os.path.join(ROOT, 'tools', 'checks', 'dump.js')], cwd=ROOT))
+# 이전에 만든 more.js 단어는 index.html에서 W에 합쳐지므로, 기존 표로 보지 않는다(다시 만든다)
+_old = open(os.path.join(ROOT, 'part3', 'more.js')).read() if os.path.exists(os.path.join(ROOT, 'part3', 'more.js')) else ''
+OLDKEYS = set(json.loads(_old[_old.index('{'):_old.rindex('}') + 1])['W']) if _old else set()
 EXISTX = {}  # 추가 패턴 단어(WX) — 뜻을 안 정한 단어는 여기서도 찾는다
 EXIST = {}   # (hz, py) -> [(key, ko)]  — 기존 W(단어 탭에 나오는 표)
 for k, hz, py, hg, tones, ko in dump['part3']:
     t, key = k.split('.', 1)
+    if t == 'W' and key in OLDKEYS: continue
     if t == 'W': EXIST.setdefault((hz, py), []).append((key, ko))
     elif t == 'WX': EXISTX.setdefault((hz, py), (key, [hz, py, hg, tones, ko]))
 

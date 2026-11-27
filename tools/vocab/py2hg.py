@@ -37,7 +37,8 @@ def conv(syl):
     else:
         if ini in ('j','q','x') and fin.startswith('u'): fin = 'ü' + fin[1:]
         parts = list(F[fin])
-        if ini in ('zh','ch','sh','r','z','c','s') and fin == 'i': parts = [('ㅡ','')]
+        if ini in ('z','c','s') and fin == 'i': parts = [('ㅡ','')]
+        if ini in ('zh','ch','sh','r') and fin == 'i': parts = [('ㅡ','ㄹ')]  # 혀를 말아 올리는 소리: 즐·츨·슬·를 (사용자 결정 2026-11-27)
         if ini == 'j':
             parts = {'ia':[('ㅏ','')],'iao':[('ㅏ',''),('ㅗ','')],'ian':[('ㅔ','ㄴ')],'iang':[('ㅏ','ㅇ')],'iong':[('ㅜ','ㅇ')]}.get(fin, parts)
         if ini in ('q','x'):

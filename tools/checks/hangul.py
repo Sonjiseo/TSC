@@ -46,3 +46,8 @@ if __name__ == '__main__':
     for b in bad:
         if b not in seen: seen.add(b); out.append(b)
     print('\n'.join(out)); print('part2 다른 곳', len(out))
+    # assets/words.js (유의어·반의어 표)의 [병음, 한글, 뜻]
+    w = open(os.path.join(ROOT, 'assets', 'words.js')).read(); bad = 0
+    for py, hg in re.findall(r"\['([^'\]]+)','([^'\]]+)',\s*'[^']*'\]", w):
+        if re.search('[가-힣]', hg) and [plain(x) for x in re.split(r'[| ]', hg) if x] != expect(py): bad += 1; print('words.js |', py, hg)
+    print('words.js 다른 곳', bad)
