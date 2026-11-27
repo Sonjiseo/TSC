@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TSC 단어장</title>
+<meta name="description" content="TSC 교재 단어장 — 주제별 단어, ★ 3급 핵심 단어와 예문">
+<link rel="stylesheet" href="../assets/app.css">
+<script src="../assets/app.js"></script>
+<script src="../assets/words.js"></script>
+<script src="data.js"></script>
+</head>
+<body class="has-bottom">
+<main class="wrap">
+  <section class="hero">
+    <div class="eyebrow">TSC 단어장</div>
+    <h1>주제별 단어장</h1>
+    <p>교재 단어를 주제별로 모았어요. <b>★ 3급 핵심 단어</b>부터 외우고, 예문은 2·3·4부분 답변에 그대로 써 보세요.</p>
+  </section>
+  <nav class="tabs bottom" id="tabs" aria-label="단어장 메뉴"></nav>
+  <section id="view" aria-live="polite"></section>
+  <p class="foot">외운 표시는 이 기기 브라우저에만 저장돼요.</p>
+</main>
+<script>
+const T = TSC, {esc, $, $$} = T, CATS = window.VOC;
+T.topbar({title: '단어장', sub: 'TSC 중국어 말하기'});
+T.save('tsc-last', {href: 'vocab/', name: '단어장'});
+const prog = T.progress('voc');
+const ALLW = CATS.flatMap(c => c.words.map(w => Object.assign(w, {cat: c})));
+const STAR = ALLW.filter(w => w.star);
+const st = Object.assign({cat: 'all', onlyStar: true, onlyWrong: false, mode: 'list'}, T.load('tsc-voc-view', {}));
+const saveSt = () => T.save('tsc-voc-view', {cat: st.cat, onlyStar: st.onlyStar, mode: st.mode});
+function summary(){ const s = T.load('tsc-summary', {}); s.voc = {done: prog.count(STAR.map(w => w.id)), total: STAR.length}; T.save('tsc-summary', s); }
+
+/* 예문 속 단어 뜻: 단어장 단어 + 기본 단어 */
+ALLW.forEach(w => T.addLex({py: w.py.replace(/\s*…\s*/g, ' ').replace(/\s+/g, ' ').trim(), hg: w.hg, parts: w.parts, ko: w.ko}));
+T.addLexList(window.VOC_FUNC);
+T.lexPick = (key, list, c) => {
+  const by = s => list.find(x => x.ko.includes(s));
+  const has = k => c.keys.includes(k);
+  switch (key) {
+    case 'jiàn': return c.next === 'yīfu' ? by('벌') : by('만나');
+    case 'jiā': return ['zhè', 'nà'].includes(c.prev) ? by('세는') : by('집');
+    case 'kuài': if (['qù', 'lái', 'huí'].includes(c.next)) return by('빨리');
+      return (c.next === 'máo' || /^(yí|liǎng|sān|sì|wǔ|liù|qī|bā|jiǔ|shí|sānshí|shíwǔ|èrshí)/.test(c.prev || '')) ? by('위안') : by('빠르');
+    case 'fēn': return has('diǎn') ? by('분') : by('0.01');
+    case 'zuò': return c.keys.slice(c.i + 1, c.i + 6).some(k => /^(dìtiě|chē|gōnggòng|chūzūchē|fēijī)/.test(k)) ? by('타다') : by('하다');
+    case 'zhù': return c.i === 0 ? by('기원') : by('살다');
+    case 'nán': return by('어렵');
+    case 'dài': return c.next === 'sǎn' ? by('챙기') : by('쓰다');
+    default: return null;
+  }
+};
+T.exampleSource = () => STAR.flatMap(w => w.ex);
+const view = $('#view');
+
+/* ===== 목록 ===== */
+const exRow = e => '<div style="margin-top:8px"><p class="small" style="margin:0;font-weight:650">' + esc(e.ko) + '</p><div class="reveal open" style="margin-top:4px">' + T.sayHTML(e) + '</div></div>';
+function pool(){
+  return ALLW.filter(w => (st.cat === 'all' || w.cat.id === st.cat) && (!st.onlyStar || w.star) && (!st.onlyWrong || T.markState('voc', w.id) === 'wrong'));
+}
+function wordCard(w){
+  const s = T.markState('voc', w.id);
+  return '<article class="card' + (s ? ' ' + s : '') + '" data-id="' + w.id + '" style="padding:14px 16px;margin:8px 0">' +
+    '<div class="row" style="align-items:flex-start">' +
+      '<div style="flex:1;min-width:0" data-w="' + esc(JSON.stringify({py: w.py, hg: w.hg, parts: w.parts, ko: w.ko})) + '" role="button" tabindex="0">' +
+        '<div class="say"><div class="line py" style="font-size:20px">' + (w.star ? '<span class="badge accent" style="margin-right:6px;vertical-align:3px">★</span>' : '') + esc(T.pinyinWithExpanded(w.py)) + '</div>' +
+        '<div class="line hg">' + T.toneHTML(w.hg, w.parts) + '</div></div>' +
+        '<div class="ko" style="font-size:16px">' + esc(w.ko) + '</div>' +
+        (w.note ? '<div class="small muted">💡 ' + esc(w.note) + '</div>' : '') +
+      '</div>' + T.markBtns('voc', w.id) + '</div>' +
+    (w.ex ? '<details class="more"><summary>예문 ' + w.ex.length + '</summary>' + w.ex.map(exRow).join('') + '</details>' : '') +
+    '</article>';
+}
+function controls(){
+  const cnt = c => ALLW.filter(w => (c === 'all' || w.cat.id === c) && (!st.onlyStar || w.star)).length;
+  const starDone = prog.count(STAR.map(w => w.id));
+  const wrongN = ALLW.filter(w => T.markState('voc', w.id) === 'wrong').length;
+  return '<div class="card" id="statcard"><div class="row"><div class="stat"><b>' + starDone + '</b><span class="muted">/ ' + STAR.length + ' ★ 핵심 단어 외움</span></div></div>' +
+    '<div class="progress" style="margin-top:10px"><i style="width:' + (starDone / STAR.length * 100) + '%"></i></div>' +
+    '<div class="row" style="margin-top:10px"><button class="chip" type="button" data-star aria-pressed="' + st.onlyStar + '">★ 핵심만</button>' + T.wrongToggle(st.onlyWrong, wrongN) +
+    '<span class="spacer"></span><span class="seg" id="vmode"><button type="button" data-v="list" aria-pressed="' + (st.mode === 'list') + '">목록</button><button type="button" data-v="card" aria-pressed="' + (st.mode === 'card') + '">카드</button></span></div></div>' +
+    '<div class="chips">' + [['all', '전체'], ...CATS.map(c => [c.id, c.name])].map(([id, n]) => '<button class="chip" type="button" data-cat="' + id + '" aria-pressed="' + (st.cat === id) + '">' + esc(n) + '<span class="n">' + cnt(id) + '</span></button>').join('') + '</div>';
+}
+let deck = [], dpos = 0;
+function render(){
+  const list = pool();
+  let h = controls();
+  if (!list.length) h += st.onlyWrong ? T.emptyWrong : '<div class="card empty">이 주제에는 ★ 핵심 단어가 없어요. ‘★ 핵심만’을 끄면 전체 단어가 보여요.</div>';
+  else if (st.mode === 'list') h += list.map(wordCard).join('');
+  else {
+    const ids = list.map(w => w.id);
+    if (!deck.length || !deck.every(id => ids.includes(id))) { deck = ids.slice().sort(() => Math.random() - .5); dpos = 0; }
+    if (dpos >= deck.length) h += '<div class="card center"><h3>한 바퀴 끝! 👏</h3><p class="muted">외운 단어 ' + prog.count(deck) + ' / ' + deck.length + '</p><button class="btn primary" type="button" id="again">다시 섞어서 시작</button></div>';
+    else {
+      const w = ALLW.find(x => x.id === deck[dpos]);
+      h += '<div class="small muted">' + (dpos + 1) + ' / ' + deck.length + ' · ' + esc(w.cat.name) + '</div><div class="progress" style="margin:6px 0"><i style="width:' + (dpos / deck.length * 100) + '%"></i></div>' +
+        '<div class="flash" id="flash"><button class="inner" type="button" aria-label="카드 뒤집기"><div class="face"><div class="small muted">중국어로 말해 보세요</div><div class="big-ko">' + esc(w.ko) + '</div><div class="small muted">눌러서 뒤집기</div></div>' +
+        '<div class="face back"><div class="say"><div class="line py" style="font-size:28px">' + esc(T.pinyinWithExpanded(w.py)) + '</div><div class="line hg" style="font-size:20px">' + T.toneHTML(w.hg, w.parts) + '</div></div><div class="small muted">' + esc(w.ko) + '</div></div></button></div>' +
+        T.judgeBtns() +
+        (w.ex ? '<div class="card" style="margin-top:14px"><p class="small muted" style="margin:0">예문</p>' + w.ex.map(e => '<div style="margin-top:8px"><p class="small" style="margin:0;font-weight:650">' + esc(e.ko) + '</p>' + T.revealHTML(T.sayHTML(e)) + '</div>').join('') + '</div>' : '');
+    }
+  }
+  view.innerHTML = h;
+  const fl = $('#flash'); if (fl) fl.querySelector('.inner').onclick = () => fl.classList.toggle('flipped');
+  const next = ok => { const id = deck[dpos]; T.setMark('voc', id, ok ? 'done' : 'wrong'); if (!ok) deck.push(id); dpos++; summary(); render(); };
+  $('#yes') && ($('#yes').onclick = () => next(true));
+  $('#no') && ($('#no').onclick = () => next(false));
+  $('#again') && ($('#again').onclick = () => { deck = []; render(); });
+}
+view.addEventListener('click', e => {
+  const c = e.target.closest('[data-cat]'); if (c) { st.cat = c.dataset.cat; deck = []; saveSt(); render(); return; }
+  if (e.target.closest('[data-star]')) { st.onlyStar = !st.onlyStar; deck = []; saveSt(); render(); return; }
+  if (e.target.closest('[data-wrongonly]')) { st.onlyWrong = !st.onlyWrong; deck = []; render(); return; }
+  const m = e.target.closest('#vmode button'); if (m) { go(m.dataset.v); }
+});
+T.onMark = () => { summary(); const el = $('#statcard'); if (el) { const d = prog.count(STAR.map(w => w.id)); el.querySelector('.stat b').textContent = d; el.querySelector('.progress i').style.width = (d / STAR.length * 100) + '%'; } };
+
+/* 아래 탭: 목록 / 카드 넘기기 */
+const TABS = [['list', '목록', '📋'], ['card', '카드 넘기기', '🃏']];
+function go(t){
+  st.mode = t; deck = []; saveSt();
+  T.tabs($('#tabs'), TABS, t, go); render(); scrollTo({top: 0});
+}
+T.tabs($('#tabs'), TABS, st.mode, go);
+summary();
+render();
+</script>
+</body>
+</html>
