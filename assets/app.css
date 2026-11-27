@@ -136,7 +136,7 @@ body.hide-py rt{visibility:hidden}
 .tip{display:flex;gap:10px;background:var(--surface-2);border-left:3px solid var(--accent);border-radius:10px;padding:10px 14px;margin-top:10px;font-size:15px}
 .tip b{color:var(--accent);flex:none}
 details.more{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
-details.more summary{cursor:pointer;font-weight:650;color:var(--muted);font-size:14px;list-style:none}
+details.more summary{cursor:pointer;font-weight:650;color:var(--muted);font-size:14px;list-style:none;padding:8px 0;margin:-8px 0 -4px}
 details.more summary::before{content:"▸ ";}
 details.more[open] summary::before{content:"▾ ";}
 
@@ -221,7 +221,7 @@ img.photo{display:block;width:100%;border-radius:14px;margin-top:10px}
 .word[data-w]{cursor:pointer;position:relative}
 .word[data-w]:hover{border-color:var(--brand)}
 .word .marks{position:absolute;top:6px;right:6px}
-.word .mark{width:30px;height:30px;border-radius:9px}
+.word .mark{width:34px;height:34px;border-radius:9px}
 .word .mark svg{width:15px;height:15px}
 .word:has(.marks){padding-right:76px}
 @media (max-width:520px){.words:has(.marks){grid-template-columns:1fr}}
@@ -251,9 +251,9 @@ img.photo{display:block;width:100%;border-radius:14px;margin-top:10px}
 .vrow .star{color:var(--accent);font-size:12px;margin-right:3px;vertical-align:2px}
 .vrow .vk{font-size:14px;font-weight:650;line-height:1.3;min-width:0}
 .vrow .vk small{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-top:2px}
-.vexbtn{display:block;width:max-content;margin-top:3px;padding:1px 8px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:12px;font-weight:650;color:var(--brand-text)}
+.vexbtn{display:block;width:max-content;margin-top:4px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:12px;font-weight:650;color:var(--brand-text)}
 .vexbtn[aria-expanded="true"]{background:var(--brand-soft);border-color:transparent}
-.vrow .mark{width:32px;height:32px;border-radius:9px}
+.vrow .mark{width:34px;height:34px;border-radius:9px}
 .vrow .mark svg{width:15px;height:15px}
 .vrow .marks{gap:4px}
 .vex{grid-column:1/-1;padding:2px 0 4px}
@@ -262,3 +262,13 @@ img.photo{display:block;width:100%;border-radius:14px;margin-top:10px}
 
 /* 문장별 줄 바꿈 (한 답변 안의 여러 문장) */
 .say+.say{margin-top:12px}
+
+/* 휴대폰: 맨 위 소개는 짧게(두 줄), 누르면 펼침 — 학습 내용이 첫 화면에 더 많이 보이게 */
+@media (max-width:640px){
+  .hero{padding:14px 0 2px}
+  .hero h1{font-size:26px;margin:.15em 0 .25em}
+  .hero p{font-size:14px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
+  .hero.open p{display:block}
+  .tabs:not(.bottom){margin-top:12px}
+  input[type=checkbox],input[type=radio]{width:20px;height:20px;accent-color:var(--brand)}
+}

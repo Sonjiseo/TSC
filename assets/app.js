@@ -201,7 +201,73 @@ const linkPinyin = (py, expand) => {
   }
   return out.join(' ').replace(/ <span class="brk"/g, ' <span class="brk"');
 };
+/* 한 답변 안에 문장이 여러 개면 줄을 나눈다. 한국어 번역 문장 수에 맞춰 중국어도 쉼표 자리에서 나눠
+   '한국어 한 문장 = 중국어 한 줄'이 되게 한다 (병음·한글·성조·단어 뜻을 같은 자리에서 자름) */
+const SPLIT_MEMO = new WeakMap();
+const cutRow = (row, re) => {
+  const pyS = row.py.split(re).filter(Boolean);
+  if (pyS.length < 2) return null;
+  if (!row.hg && !row.tones) return pyS.map(py => ({py, hz: ''}));
+  if (!row.hg || !row.tones) return null;
+  const hgS = row.hg.split(re).filter(Boolean);
+  if (hgS.length !== pyS.length) return null;
+  const cnt = pyS.map(x => T.tonesOf(x.replace(/\s*\([^)]*\)/g, '').replace(/\bTSC\b/g, '')).length + (x.match(/\bTSC\b/g) || []).length);
+  if (cnt.reduce((a, b) => a + b, 0) !== row.tones.length) return null;
+  let wlS = null;
+  if (row.wl) { const end = re.source.includes(',') ? /[.?!,]$/ : /[.?!]$/; wlS = [[]]; row.wl.forEach((t, i) => { wlS[wlS.length - 1].push(t); if (end.test(t.t) && i < row.wl.length - 1) wlS.push([]); }); if (wlS.length !== pyS.length) return null; }
+  let k = 0;
+  return pyS.map((py, i) => { const o = {py, hg: hgS[i], tones: row.tones.slice(k, k + cnt[i])}; k += cnt[i]; if (wlS) o.wl = wlS[i]; return o; });
+};
+const joinRows = rs => { const o = {py: rs.map(r => r.py).join(' '), hz: ''}; if (rs[0].hg != null) { o.hg = rs.map(r => r.hg).join(' '); o.tones = rs.flatMap(r => r.tones); } if (rs.every(r => r.wl)) o.wl = rs.flatMap(r => r.wl); return o; };
+const sylN = r => (r.py.match(/[a-zāáǎàēéěèīíǐìōóǒòūúǔùǚü]+/gi) || []).length;
+/* n개 조각(chunks)을 한국어 문장 ks 수만큼 순서대로 묶기: 길이 비율 + 문장 끝 부호(?·!)가 맞게, 문장 끝(.?!)을 넘어서 묶지 않기 */
+/* 이어 주는 말: 한국어 문장이 이 말로 시작하면 중국어 줄도 짝이 되는 말로 시작해야 함 */
+const CONN = [['게다가', /^(érqiě|hái|bìngqiě)/i], ['그런데', /^(kěshì|dànshì|búguò)/i], ['하지만', /^(kěshì|dànshì|búguò)/i], ['그래서', /^(suǒyǐ)/i], ['예를 들면', /^(bǐrú)/i]];
+const groupTo = (chunks, ks, hard) => {
+  const n = chunks.length, m = ks.length, endP = t => (t.trim().match(/[?!]$/) || ['.'])[0];
+  const zl = chunks.map(sylN), zt = zl.reduce((a, b) => a + b, 0) || 1;
+  const kl = ks.map(x => x.replace(/[\s.,?!]/g, '').length), kt = kl.reduce((a, b) => a + b, 0) || 1;
+  const memo = {}; const go = (i, j) => { const key = i + ',' + j; if (key in memo) return memo[key];
+    if (j === m) return memo[key] = i === n ? [0, []] : [Infinity, []];
+    let r = [Infinity, []], acc = 0;
+    for (let e = i + 1; e <= n - (m - j - 1); e++) { acc += zl[e - 1]; if (hard && e - 1 > i && hard(chunks[e - 2])) break;
+      const sub = go(e, j + 1); const c = (acc / zt - kl[j] / kt) ** 2 + (endP(chunks[e - 1].py) === endP(ks[j]) ? 0 : 0.5) + (CONN.some(([k, z]) => ks[j].startsWith(k) && !z.test(chunks[i].py)) ? 0.5 : 0) + sub[0]; if (c < r[0]) r = [c, [e, ...sub[1]]]; }
+    return memo[key] = r; };
+  const res = go(0, 0); if (res[0] === Infinity) return null;
+  let a = 0; return res[1].map(e => { const g = chunks.slice(a, e); a = e; return g; });
+};
+T.splitRow = row => {
+  if (!row || !row.py) return [row];
+  if (SPLIT_MEMO.has(row)) return SPLIT_MEMO.get(row);
+  const ko = row.ko || '', ks = ko.split(/(?<=[.?!])\s+/).filter(Boolean);
+  const sents = cutRow(row, /(?<=[.?!])\s+/) || [row];
+  let out = null;
+  if (ks.length > 1 && ks.length > sents.length) {
+    const clauses = cutRow(row, /(?<=[.?!,])\s+/);
+    const g = clauses && clauses.length >= ks.length && groupTo(clauses, ks, c => /[.?!]$/.test(c.py));
+    if (g) out = g.map((cs, i) => Object.assign(cs.length > 1 ? joinRows(cs) : cs[0], {ko: ks[i], koLine: ks[i]}));
+  }
+  if (!out && sents.length > 1) {
+    let kl = ks;
+    if (ks.length > sents.length) { /* 한국어 문장이 더 많으면 중국어 문장 수만큼 묶기 */
+      const n = sents.length, m = ks.length, endP = t => (t.trim().match(/[?!]$/) || ['.'])[0];
+      const zl = sents.map(sylN), zt = zl.reduce((a, b) => a + b, 0) || 1, kn = ks.map(x => x.replace(/[\s.,?!]/g, '').length), kt = kn.reduce((a, b) => a + b, 0) || 1;
+      const memo = {}; const go = (i, j) => { const key = i + ',' + j; if (key in memo) return memo[key];
+        if (j === n) return memo[key] = i === m ? [0, []] : [Infinity, []];
+        let r = [Infinity, []], acc = 0;
+        for (let e = i + 1; e <= m - (n - j - 1); e++) { acc += kn[e - 1]; const sub = go(e, j + 1); const c = (acc / kt - zl[j] / zt) ** 2 + (endP(ks[e - 1]) === endP(sents[j].py) ? 0 : 0.5) + sub[0]; if (c < r[0]) r = [c, [e, ...sub[1]]]; }
+        return memo[key] = r; };
+      let a = 0; kl = go(0, 0)[1].map(e => { const g = ks.slice(a, e).join(' '); a = e; return g; });
+    }
+    out = sents.map((r, i) => Object.assign(r, {ko, koLine: kl.length === sents.length ? kl[i] : null}));
+  }
+  out = out || [row];
+  SPLIT_MEMO.set(row, out); return out;
+};
+T.koLines = row => { const sp = T.splitRow(row); if (sp.length < 2) return [row.ko || '']; if (sp.every(r => r.koLine != null)) return sp.map(r => r.koLine); return (row.ko || '').split(/(?<=[.?!])\s+/); };
+T.koHTML = row => T.koLines(row).map(esc).join('<br>');
 T.sayHTML = (row, opt = {}) => {
+  if (!opt.one) { const sp = T.splitRow(row); if (sp.length > 1) return sp.map(r => T.sayHTML(r, Object.assign({}, opt, {one: true}))).join(''); }
   const lines = [];
   /* 한자는 화면에 보이지 않음. 병음 단어를 누르면 뜻이 나온다 */
   if (row.wl) {
@@ -324,6 +390,7 @@ T.tabs = (el, items, current, onPick) => {
   el.innerHTML = items.map(([id, label, icon], i) => '<button type="button" role="tab" data-id="' + id + '" aria-selected="' + (id === current) + '"><span class="ti" aria-hidden="true">' + (icon || '') + '</span>' + esc(label) + '</button>').join('');
   el.onclick = e => { const b = e.target.closest('button'); if (!b) return; T.$$('button', el).forEach(x => x.setAttribute('aria-selected', x === b)); onPick(b.dataset.id); };
 };
+document.addEventListener('click', e => { const h = e.target.closest('.hero p'); if (h) h.parentElement.classList.toggle('open'); });
 /* ---------- 분류 버튼이 많으면 한 줄 선택 버튼으로 접기 ---------- */
 /* .chips 안 버튼이 6개 이상이면 '현재 선택 ▾' 버튼 하나로 보이고, 누르면 두 줄 격자로 전체가 펼쳐진다 */
 const compactChips = el => {

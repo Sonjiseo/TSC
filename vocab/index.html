@@ -43,7 +43,7 @@ T.exampleSource = () => [...STAR.flatMap(w => w.ex), ...window.MW.words.flatMap(
 const view = $('#view');
 
 /* ===== 목록 ===== */
-const exRow = e => '<div class="vexi"><p class="small" style="margin:0;font-weight:650">' + esc(e.ko) + '</p><div class="reveal open" style="margin-top:4px">' + T.sayHTML(e) + '</div></div>';
+const exRow = e => '<div class="vexi"><p class="small" style="margin:0;font-weight:650">' + T.koHTML(e) + '</p><div class="reveal open" style="margin-top:4px">' + T.sayHTML(e) + '</div></div>';
 function pool(){
   return ALLW.filter(w => (st.cat === 'all' || w.cat.id === st.cat) && (!st.onlyStar || w.star) && (!st.onlyWrong || T.markState('voc', w.id) === 'wrong'));
 }

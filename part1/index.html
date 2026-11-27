@@ -152,13 +152,13 @@ function viewLearn(){
     h += '<article class="card' + (on ? ' done' : '') + '" data-q="' + q.id + '">' +
       '<div class="card-head"><span class="badge">문제 ' + (i + 1) + '</span><span class="label">' + q.topic + '</span>' + T.markBtns('p1', q.id) + '</div>' +
       T.sayHTML(q.q) +
-      '<p class="muted" style="margin:6px 0 10px">' + esc(q.q.ko) + '</p>' +
+      '<p class="muted" style="margin:6px 0 10px">' + T.koHTML(q.q) + '</p>' +
       '<details class="more"><summary>단어 풀이 (' + q.words.length + ')</summary><div class="words">' + q.words.map(k => wordBtn(W[k])).join('') + '</div></details>' +
       '<h3>내 답변</h3>' +
-      (a ? '<p class="ko">' + esc(a.ko) + '</p>' + T.revealHTML(T.sayHTML(a)) + '<div class="row" style="margin-top:8px"><button class="btn ghost" type="button" data-go="me">✏️ 내 정보 바꾸기</button></div>'
+      (a ? '<p class="ko">' + T.koHTML(a) + '</p>' + T.revealHTML(T.sayHTML(a)) + '<div class="row" style="margin-top:8px"><button class="btn ghost" type="button" data-go="me">✏️ 내 정보 바꾸기</button></div>'
          : '<p class="muted">‘내 답변’ 탭에서 가족을 한 명 이상 골라 주세요.</p>') +
       '<div class="tip"><b>TIP</b><span>' + esc(q.tip) + '</span></div>' +
-      '<details class="more"><summary>다른 답변 예시</summary>' + q.more.map(([hz, py, ko]) => '<div style="margin-top:8px"><p class="ko" style="margin:0">' + esc(ko) + '</p>' + T.sayHTML({hz, py}) + '</div>').join('') + '</details>' +
+      '<details class="more"><summary>다른 답변 예시</summary>' + q.more.map(([hz, py, ko]) => '<div style="margin-top:8px"><p class="ko" style="margin:0">' + T.koHTML({py, ko}) + '</p>' + T.sayHTML({hz, py}) + '</div>').join('') + '</details>' +
       '</article>';
   });
   view.innerHTML = h;
@@ -254,7 +254,7 @@ async function runExam(){
   for (let i = 0; i < QS.length && !cancelled; i++) {
     const q = QS[i];
     view.innerHTML = '<div class="card center"><div class="card-head"><span class="badge">문제 ' + (i + 1) + ' / 4</span><span class="label"></span><button class="btn ghost" type="button" id="quit">그만하기</button></div>' +
-      T.sayHTML(q.q) + '<p class="small muted" style="margin:4px 0 0">' + esc(q.q.ko) + '</p>' +
+      T.sayHTML(q.q) + '<p class="small muted" style="margin:4px 0 0">' + T.koHTML(q.q) + '</p>' +
       '<div id="tm"></div></div>';
     $('#quit').onclick = () => { cancelled = true; cd && cd.cancel(); };
     cd = T.countdown($('#tm'), 3, '질문 읽기', 'prep'); if (!(await cd)) { cancelled = true; break; }

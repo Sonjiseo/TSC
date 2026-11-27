@@ -85,7 +85,7 @@ const saveSt = () => T.save('tsc-gr-view', st);
 function summary(){ const s = T.load('tsc-summary', {}); s.gr = {done: prog.count(ALLP.map(p => p.id)), total: ALLP.length}; T.save('tsc-summary', s); }
 
 /* ===== 문법 카드 ===== */
-const exRow = e => '<div style="margin-top:10px"><p class="ko" style="margin:0;font-size:15px">' + (e.tsc ? '<span class="badge accent" style="margin-right:6px">TSC 활용</span>' : '') + esc(e.ko) + '</p>' + T.revealHTML(T.sayHTML(e)) + '</div>';
+const exRow = e => '<div style="margin-top:10px"><p class="ko" style="margin:0;font-size:15px">' + (e.tsc ? '<span class="badge accent" style="margin-right:6px">TSC 활용</span>' : '') + T.koHTML(e) + '</p>' + T.revealHTML(T.sayHTML(e)) + '</div>';
 /* 공식: ' / '는 줄 바꿈, ' + '는 칸으로 나누고 병음은 파란 글씨, ' · '는 목록 */
 const PYR = /([A-Za-zāáǎàēéěèīíǐìōóǒòūúǔùǚǜü'][A-Za-zāáǎàēéěèīíǐìōóǒòūúǔùǚǜü'…]*(?:\s+[a-zāáǎàēéěèīíǐìōóǒòūúǔùǚǜü'…]+)*)/g;
 const pyHi = t => esc(t).replace(PYR, '<b class="gk">$1</b>');
@@ -100,12 +100,12 @@ const tipHTML = t => '<div class="tip small"><span>💡</span><span>' + (t.inclu
 const keysOf = f => [...new Set((f.match(/[a-zāáǎàēéěèīíǐìōóǒòūúǔùǚü']{2,}/gi) || []).map(x => x.toLowerCase()))];
 function pcard(p, n){
   const s = T.markState('gr', p.id);
-  return '<article class="card gcard' + (s ? ' ' + s : '') + '" data-id="' + p.id + '" data-keys="' + esc(keysOf(p.f).join(' ')) + '"><div class="card-head"><span class="badge">' + n + '</span><span class="label" style="color:var(--ink);font-size:17px;flex:1">' + esc(p.t) + ((p.d.match(/\(HSK ([^)]*)\)/) || [])[1] ? ' <span class="badge" style="font-size:11px;vertical-align:2px">HSK ' + esc(p.d.match(/\(HSK ([^)]*)\)/)[1]) + '</span>' : '') + '</span>' + T.markBtns('gr', p.id) + '</div>' +
+  return '<article class="card gcard' + (s ? ' ' + s : '') + '" data-id="' + p.id + '" data-keys="' + esc(keysOf(p.f).join(' ')) + '"><div class="card-head"><span class="badge">' + n + '</span><span class="label" style="color:var(--ink);font-size:17px;flex:1">' + esc(p.t) + ((p.d.match(/\(HSK ([^)]*)\)/) || [])[1] ? ' <span class="badge" style="font-size:12px;vertical-align:2px">HSK ' + esc(p.d.match(/\(HSK ([^)]*)\)/)[1]) + '</span>' : '') + '</span>' + T.markBtns('gr', p.id) + '</div>' +
     '<div class="gsec">공식</div><div class="gf">' + formulaHTML(p.f) + '</div>' +
     '<div class="gsec">설명</div>' + descHTML(p.d) +
     (p.tip ? tipHTML(p.tip) : '') +
     '<div class="gsec">예문 <span class="muted" style="font-weight:500">· 한국어를 보고 먼저 말해 보세요</span></div>' +
-    p.ex.map((e, i) => '<div class="gex"><p class="ko"><span class="gnum">' + (i + 1) + '</span>' + (e.tsc ? '<span class="badge accent" style="margin-right:6px">TSC 활용</span>' : '') + esc(e.ko) + '</p>' + T.revealHTML(T.sayHTML(e)) + '</div>').join('') +
+    p.ex.map((e, i) => '<div class="gex"><p class="ko"><span class="gnum">' + (i + 1) + '</span>' + (e.tsc ? '<span class="badge accent" style="margin-right:6px">TSC 활용</span>' : '') + T.koHTML(e) + '</p>' + T.revealHTML(T.sayHTML(e)) + '</div>').join('') +
     (p.fix ? '<p class="small muted" style="margin:12px 0 0">✏️ 사전 표기로 고침 — ' + esc(p.fix) + '</p>' : '') + '</article>';
 }
 /* 예문 속 공식 단어(핵심어)를 파란 바탕으로 */
@@ -163,7 +163,7 @@ function viewMemo(){
     '<div class="chips">' + [['all', '전체'], ...G.memo.map(m => [m.id, m.part])].map(([id, n]) => '<button class="chip" type="button" data-memo="' + id + '" aria-pressed="' + (st.memo === id) + '">' + esc(n) + '</button>').join('') + '</div>';
   G.memo.filter(m => st.memo === 'all' || m.id === st.memo).forEach(m => {
     h += '<h2 style="margin-top:20px">' + esc(m.part) + ' <span class="small muted" style="font-weight:500">' + esc(m.desc) + '</span></h2>' +
-      m.rows.map(r => { const s = T.markState('grm', r.id); return '<div class="card' + (s ? ' ' + s : '') + '" data-id="' + r.id + '" style="padding:12px 14px;margin:8px 0"><div class="row" style="align-items:flex-start"><p class="ko" style="margin:0;flex:1">' + esc(r.ko) + '</p>' + T.markBtns('grm', r.id) + '</div>' + T.revealHTML(T.sayHTML(r)) + '</div>'; }).join('');
+      m.rows.map(r => { const s = T.markState('grm', r.id); return '<div class="card' + (s ? ' ' + s : '') + '" data-id="' + r.id + '" style="padding:12px 14px;margin:8px 0"><div class="row" style="align-items:flex-start"><p class="ko" style="margin:0;flex:1">' + T.koHTML(r) + '</p>' + T.markBtns('grm', r.id) + '</div>' + T.revealHTML(T.sayHTML(r)) + '</div>'; }).join('');
   });
   view.innerHTML = h;
 }

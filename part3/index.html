@@ -89,7 +89,7 @@ const splitCache = new WeakMap();
 const splitS = s => { if (!s.keys) return [s]; if (splitCache.has(s)) return splitCache.get(s);
   const parts = []; let cur = []; s.keys.forEach(k => { cur.push(k); if (['。', '！', '？'].includes(k)) { parts.push(cur); cur = []; } }); if (cur.length) parts.push(cur);
   const out = parts.length < 2 ? [s] : parts.map(ks => S('', ...ks)); splitCache.set(s, out); return out; };
-const sayMulti = s => splitS(s).map(p => T.sayHTML(p)).join('');
+const sayMulti = s => T.sayHTML(s);
 const koBr = t => esc(t).replace(/([.?!])\s+/g, '$1<br>');
 /* 한국어 번역 줄을 중국어 문장 줄과 같은 수로 묶기: 한국어 문장들을 중국어 문장 수만큼 순서대로 나누되, 길이 비율이 가장 비슷하게 */
 const koGroups = s => {
@@ -107,7 +107,7 @@ const koGroups = s => {
     return best[key] = r; };
   const cuts = go(0, 0)[1]; let a = 0; return cuts.map(e => { const g = ks.slice(a, e).join(' '); a = e; return g; });
 };
-const koS = s => koGroups(s).map(esc).join('<br>');
+const koS = s => T.koHTML(s);
 /* 추가 단원 단어(more.js, tools/part3/build.py로 생성) */
 Object.assign(W, window.P3MORE.W);
 const fromSpec = it => { const mk = ([ko, keys]) => S(ko, ...keys);

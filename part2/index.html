@@ -32,7 +32,8 @@ const view = $('#view');
 /* ===== 데이터 정리 ===== */
 const PAGES = ['행동','장소와 행동','사물의 위치','장소','가격','금액과 양사','날짜와 시각','측정','비교와 번호','위치와 층수'];
 const RANGES = [[1,21],[22,43],[44,65],[66,86],[87,108],[109,120]];
-const rowObj = r => ({py: r[1], hg: r[2], tones: r[3]});
+const rowObj = r => ({py: r[1], hg: r[2], tones: r[3], ko: r[0]});
+const koR = r => T.koHTML(rowObj(r));
 const IDS = {
   ex: D.ex.map((_, i) => 'ex:' + i),
   vocab: D.v.flatMap((g, t) => g[1].map((_, i) => 'v:' + t + ':' + i)),
@@ -52,11 +53,11 @@ function studyNote(x){
     (grammar ? '<div class="tip" style="background:var(--brand-soft)"><b style="color:var(--brand-text)">' + esc(title) + '</b><span>' + esc(grammar) + '</span></div>' : '') +
     '<div class="tip"><b>TIP</b><span>' + esc(n[2] || tip) + '</span></div></details>';
 }
-const pairInner = x => '<p class="small muted" style="margin:4px 0 0">질문</p><p class="ko" style="margin:0">' + esc(x[0][0]) + '</p>' + sayRow(x[0]) +
-  '<p class="small muted" style="margin:12px 0 0">답변</p><p class="ko" style="margin:0">' + esc(x[1][0]) + '</p>' + sayRow(x[1]) + studyNote(x);
+const pairInner = x => '<p class="small muted" style="margin:4px 0 0">질문</p><p class="ko" style="margin:0">' + koR(x[0]) + '</p>' + sayRow(x[0]) +
+  '<p class="small muted" style="margin:12px 0 0">답변</p><p class="ko" style="margin:0">' + koR(x[1]) + '</p>' + sayRow(x[1]) + studyNote(x);
 const pairCard = (x, id, label, extra = '') => '<article class="card' + (prog.has(id) ? ' done' : '') + '" data-id="' + id + '"><div class="card-head"><span class="badge">' + esc(label) + '</span><span class="label"></span>' + T.markBtns('p2', id) + '</div>' + extra + pairInner(x) + '</article>';
 function rowCard(r, id, note, word){
-  return '<div class="card' + (prog.has(id) ? ' done' : '') + '" data-id="' + id + '" style="padding:14px 16px;margin:8px 0"><div class="row"><span class="ko" style="flex:1">' + esc(r[0]) + '</span>' + (word ? '<button class="mark" type="button" aria-label="단어 자세히" title="단어 자세히" data-w="' + esc(JSON.stringify({py: r[1], hg: r[2], parts: r[3], ko: r[0]})) + '">' + T.icon.info + '</button>' : '') + T.markBtns('p2', id) + '</div>' + sayRow(r) +
+  return '<div class="card' + (prog.has(id) ? ' done' : '') + '" data-id="' + id + '" style="padding:14px 16px;margin:8px 0"><div class="row"><span class="ko" style="flex:1">' + koR(r) + '</span>' + (word ? '<button class="mark" type="button" aria-label="단어 자세히" title="단어 자세히" data-w="' + esc(JSON.stringify({py: r[1], hg: r[2], parts: r[3], ko: r[0]})) + '">' + T.icon.info + '</button>' : '') + T.markBtns('p2', id) + '</div>' + sayRow(r) +
     (note ? '<div class="tip"><b>TIP</b><span>' + esc(note) + '</span></div>' : '') + '</div>';
 }
 let lastProg = null, onlyWrong = false;
@@ -186,9 +187,9 @@ async function quizStep(){
   quiz.running = true;
   const n = quiz.deck.length, cat = CATS.find(c => it.id.startsWith(c[0] === 'vocab' ? 'v:' : c[0] + ':'))[1];
   const prompt = it.pair ? it.pair[0][0] : it.row[0];
-  const answerHTML = it.pair ? '<p class="ko" style="margin:0">' + esc(it.pair[1][0]) + '</p><div class="reveal open">' + T.sayHTML(rowObj(it.pair[1]), {noExpand: true}) + '</div>' + studyNote(it.pair) : '<div class="reveal open">' + T.sayHTML(rowObj(it.row), {noExpand: true}) + '</div>';
+  const answerHTML = it.pair ? '<p class="ko" style="margin:0">' + koR(it.pair[1]) + '</p><div class="reveal open">' + T.sayHTML(rowObj(it.pair[1]), {noExpand: true}) + '</div>' + studyNote(it.pair) : '<div class="reveal open">' + T.sayHTML(rowObj(it.row), {noExpand: true}) + '</div>';
   view.innerHTML = '<div class="card"><div class="card-head"><span class="badge">' + cat + '</span><span class="label">' + (quiz.pos + 1) + ' / ' + n + '</span><button class="btn ghost" type="button" id="quit">그만하기</button></div><div class="progress"><i style="width:' + (quiz.pos / n * 100) + '%"></i></div>' +
-    '<p class="small muted" style="margin:14px 0 2px">' + (it.pair ? '질문 — 중국어로 듣고 답한다고 생각하고 답변을 말해 보세요' : '중국어로 말해 보세요') + '</p><p class="ko" style="font-size:20px;margin:0">' + esc(prompt) + '</p>' +
+    '<p class="small muted" style="margin:14px 0 2px">' + (it.pair ? '질문 — 중국어로 듣고 답한다고 생각하고 답변을 말해 보세요' : '중국어로 말해 보세요') + '</p><p class="ko" style="font-size:20px;margin:0">' + (it.pair ? koR(it.pair[0]) : koR(it.row)) + '</p>' +
     (it.pair ? '<details class="more"><summary>질문 병음 보기</summary>' + '<div class="reveal open">' + T.sayHTML(rowObj(it.pair[0]), {noExpand: true}) + '</div></details>' : '') +
     '<div id="tm" class="center"></div><div id="ans"></div></div>';
   let stopped = false;
