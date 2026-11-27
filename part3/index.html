@@ -14,7 +14,7 @@
   <section class="hero">
     <div class="eyebrow">TSC PART 3</div>
     <h1>3부분 빠르게 답하기</h1>
-    <p>5문항 · 준비 2초 · 답변 15초. 상대 말에 <b>반응 한마디 + 구체적인 한두 문장</b>으로 답해요. (교재 23쪽 · 제안과 부탁)</p>
+    <p>5문항 · 준비 2초 · 답변 15초. 상대 말에 <b>반응 한마디 + 구체적인 한두 문장</b>으로 답해요. (제안·부탁 · 경험·안부·계획)</p>
   </section>
   <nav class="tabs bottom" id="tabs" aria-label="학습 메뉴"></nav>
   <section id="view" aria-live="polite"></section>
@@ -45,13 +45,41 @@ const W = {
   zhao:['找','zhǎo','자오',[3],'찾다'], shenme:['什么','shénme','선|머',[2,0],'무엇'], yusan:['雨伞','yǔsǎn','위|싼',[3,3],'우산'],
   tianqi:['天气','tiānqì','톈|치',[1,4],'날씨'], yubao:['预报','yùbào','위|바오',[4,4],'예보'], shuo:['说','shuō','숴',[1],'말하다'], hui:['会','huì','후에이',[4],'~할 것이다'], xiayu:['下雨','xiàyǔ','샤|위',[4,3],'비가 오다'],
   kanjian:['看见','kànjiàn','칸|젠',[4,4],'보다 (눈에 띄다)'], le:['了','le','러',[0],'~했다 (완료)'],
+
+  /* 01 제안·부탁 / 02 경험·안부·계획 단어 */
+  shenti:['身体','shēntǐ','선|티',[1,3],'몸, 건강'], shufu:['舒服','shūfu','슈|푸',[1,0],'편안하다'], qu:['去','qù','취',[4],'가다'], mai:['买','mǎi','마이',[3],'사다'], yaoM:['药','yào','야오',[4],'약'],
+  zenme:['怎么','zěnme','전|머',[3,0],'어떻게, 왜'], yanzhong:['严重','yánzhòng','옌|중',[2,4],'심각하다'], xian:['先','xiān','셴',[1],'먼저'], xiuxi:['休息','xiūxi','시오우|시',[1,0],'쉬다'],
+  yixia:['一下','yíxià','이|샤',[2,4],'좀 ~하다, 한번 ~하다'], mashang:['马上','mǎshàng','마|샹',[3,4],'곧, 바로'], huilai:['回来','huílái','후에이|라이',[2,2],'돌아오다'],
+  bangongyongpin:['办公用品','bàngōng yòngpǐn','반|궁 융|핀',[4,1,4,3],'사무용품'], dou:['都','dōu','더우',[1],'모두, 다'], zuijin:['最近','zuìjìn','쭈에이|진',[4,4],'요즘'],
+  meiyou:['没有','méiyǒu','메이|요우',[2,3],'없다'], shijian:['时间','shíjiān','스|젠',[2,1],'시간'], keyi:['可以','kěyǐ','커|이',[3,3],'~해도 된다'],
+  zhoumo:['周末','zhōumò','저우|모',[1,4],'주말'], dianying:['电影','diànyǐng','뎬|잉',[4,3],'영화'], tingshuo:['听说','tīngshuō','팅|숴',[1,1],'~라고 들었다'],
+  mimi:['《秘密》','Mìmì','미|미',[4,4],'〈비밀〉 (영화 제목)'], youyisi:['有意思','yǒu yìsi','요우 이|쓰',[3,4,0],'재미있다'], ren:['人','rén','런',[2],'사람'],
+  tuijian:['推荐','tuījiàn','투에이|젠',[1,4],'추천하다'], women:['我们','wǒmen','워|먼',[3,0],'우리'], chi:['吃','chī','츠',[1],'먹다'], zhongguocai:['中国菜','Zhōngguó cài','중|궈 차이',[1,2,4],'중국 음식'],
+  fangjia:['放假','fàngjià','팡|자',[4,4],'방학하다, 휴가를 보내다'], shihou:['时候','shíhou','스|허우',[2,0],'때'], waiguo:['外国','wàiguó','와이|궈',[4,2],'외국'], lvxing:['旅行','lǚxíng','뤼|싱',[3,2],'여행하다'],
+  buhaoyisi:['不好意思','bù hǎoyìsi','부 하오|이|쓰',[4,3,4,0],'미안해 (가벼운 사과)'], yaoW:['要','yào','야오',[4],'~해야 한다, ~할 것이다'], canjia:['参加','cānjiā','찬|자',[1,1],'참가하다'],
+  kaoshi:['TSC考试','TSC kǎoshì','TSC 카오|스',[0,3,4],'TSC 시험'], gen:['跟','gēn','건',[1],'~와 (함께)'], xiaci:['下次','xià cì','샤 츠',[4,4],'다음번'],
+  zhouri:['周日','zhōurì','저우|르',[1,4],'일요일'], pashan:['爬山','páshān','파|산',[2,1],'등산하다'], jianmian:['见面','jiànmiàn','젠|몐',[4,4],'만나다'], ne:['呢','ne','너',[0],'~할까? (물음)'],
+  ditiezhan:['地铁站','dìtiězhàn','디|티에|잔',[4,3,4],'지하철역'], pa:['爬','pá','파',[2],'(산을) 오르다'], shan:['山','shān','산',[1],'산'],
+  gei:['给','gěi','게이',[3],'~에게'], shei:['谁','shéi','셰이',[2],'누구'], xie:['写','xiě','시에',[3],'쓰다'], xin:['信','xìn','신',[4],'편지'], yinwei:['因为','yīnwèi','인|웨이',[1,4],'왜냐하면'],
+  mama:['妈妈','māma','마|마',[1,0],'엄마'], shengri:['生日','shēngrì','성|르',[1,4],'생일'], shi:['是','shì','스',[4],'~이다'], xiang:['想','xiǎng','샹',[3],'~하고 싶다'], zhu:['祝','zhù','주',[4],'(축하·행운을) 빌다'], ta:['她','tā','타',[1],'그녀'],
+  shengrikuaile:['生日快乐','shēngrì kuàilè','성|르 콰이|러',[1,4,4,4],'생일 축하해'], jinnian:['今年','jīnnián','진|녠',[1,2],'올해'], shengdanjie:['圣诞节','Shèngdàn Jié','성|단 지에',[4,4,2],'크리스마스'],
+  dasuan:['打算','dǎsuan','다|쏸',[3,0],'~할 계획이다'], he:['和','hé','허',[2],'~와'], jiaren:['家人','jiārén','자|런',[1,2],'가족'], dongnanya:['东南亚','Dōngnányà','둥|난|야',[1,2,4],'동남아시아'],
+  xihuan:['喜欢','xǐhuan','시|환',[3,0],'좋아하다'], nar2:['那儿','nàr','날',[4],'그곳, 거기'], yangguang:['阳光','yángguāng','양|광',[2,1],'햇빛'], haitan:['海滩','hǎitān','하이|탄',[3,1],'해변'],
+  redai:['热带','rèdài','러|다이',[4,4],'열대'], shuiguo:['水果','shuǐguǒ','슈에이|궈',[3,3],'과일'], jiancha:['检查','jiǎnchá','젠|차',[3,2],'검사하다'],
+  yinian:['一年','yì nián','이 녠',[4,2],'1년'], zuo:['做','zuò','쭤',[4],'하다'], yici:['一次','yí cì','이 츠',[2,4],'한 번'], youbiyao:['有必要','yǒu bìyào','요우 비|야오',[3,4,4],'필요가 있다'],
+  chifan:['吃饭','chī fàn','츠 판',[1,4],'밥을 먹다'], zhege:['这个','zhège','저|거',[4,0],'이, 이번'], xiaxue:['下雪','xiàxuě','샤|쉬에',[4,3],'눈이 오다'], huaxue:['滑雪','huáxuě','화|쉬에',[2,3],'스키를 타다'],
+  yibian:['一边','yìbiān','이|볜',[4,1],'~하면서'], xinshang:['欣赏','xīnshǎng','신|샹',[1,3],'감상하다'], meili:['美丽','měilì','메이|리',[3,4],'아름답다'], fengjing:['风景','fēngjǐng','펑|징',[1,3],'풍경'],
+  zhe:['这','zhè','저',[4],'이것'], zui:['最','zuì','쭈에이',[4],'가장'], daBig:['大','dà','다',[4],'크다'], lequ:['乐趣','lèqù','러|취',[4,4],'즐거움'], mei3:['美','měi','메이',[3],'아름답다'],
+  pingshi:['平时','píngshí','핑|스',[2,2],'평소'], duanlian:['锻炼','duànliàn','돤|롄',[4,4],'(몸을) 단련하다, 운동하다'], yundong:['运动','yùndòng','윈|둥',[4,4],'운동, 운동하다'],
+  budan:['不但','búdàn','부|단',[2,4],'~뿐만 아니라'], dui:['对','duì','두에이',[4],'~에 (대해)'], erqie:['而且','érqiě','얼|치에',[2,3],'게다가'], huanjie:['缓解','huǎnjiě','환|지에',[3,3],'완화하다, 풀다'],
+  yali:['压力','yālì','야|리',[1,4],'스트레스, 압박'], zhen:['真','zhēn','전',[1],'정말'], yijuliangde:['一举两得','yì jǔ liǎng dé','이 쥐 량 더',[4,3,3,2],'일석이조'],
   duibuqi:['对不起','duìbuqǐ','두에이|부|치',[4,0,3],'미안해'], mang:['忙','máng','망',[2],'바쁘다'], a:['啊','a','아',[0],'(말끝 어기)'], ji:['几','jǐ','지',[3],'몇'], kankan:['看看','kànkan','칸|칸',[4,0],'한번 보다'],
 };
 /* S('한국어', '단어키', ..., '，', '/', ...) */
 const S = (ko, ...keys) => { const s = T.sentence(keys.map(k => W[k] || k), ko); s.words = keys.filter(k => W[k]); return s; };
 
 /* ===== 문항 (교재 23쪽) ===== */
-const ITEMS = [
+const ITEMS23 = [
   {id:'q1', title:'회의 자료 준비를 부탁받았을 때',
    q:S('회의 자료 준비 좀 도와줘.', 'ni', 'bang', 'wo', '/', 'zhunbei', 'huiyi', 'ziliao', 'ba', '。'),
    a:[S('좋아, 문제없어.', 'haode', '，', 'mei', 'wenti', '。'),
@@ -85,13 +113,73 @@ const ITEMS = [
    note:'zài + 동작 = ‘~하는 중’. kànjiàn … le ma? = ‘~ 봤어?’ — le는 목적어 뒤, ma 앞.'},
 ];
 
+/* 01 제안·부탁 (교재 단원) */
+const U1 = [
+  {id:'u1q1', title:'몸이 아파 약을 부탁받았을 때',
+   q:S('몸이 안 좋은데, 약 좀 사다 줄 수 있어?', 'wo', 'shenti', 'bu', 'shufu', '，', 'ni', 'neng', 'bang', 'wo', '/', 'qu', 'mai', 'yaoM', 'ma', '？'),
+   a:[S('왜 그래? 많이 아파? 먼저 좀 쉬어! 약 사고 바로 돌아올게.', 'ni', 'zenme', 'le', '？', 'hen', 'yanzhong', 'ma', '？', 'ni', 'xian', 'xiuxi', 'yixia', 'ba', '！', 'wo', 'mai', 'wan', 'yaoM', '/', 'mashang', 'huilai', '。')],
+   note:'yíxià = ‘좀 ~하다’. xiūxi yíxià는 xiūxi xiūxi처럼 동사를 겹쳐 말해도 같은 뜻이에요. mǎi wán yào = 약을 다 사다(동사 + wán). 교재는 huílái로 적었고, 회화에서는 뒤를 가볍게 huílai로도 읽어요.'},
+  {id:'u1q2', title:'사무용품 구입을 물어볼 때',
+   q:S('사무용품은 다 샀어?', 'bangongyongpin', '/', 'dou', 'mai', 'haoC', 'le', 'ma', '？'),
+   a:[S('정말 미안해. 요즘 일이 바빠서 시간이 없었어. 오늘 오후에 사러 가도 될까?', 'feichang', 'baoqian', '，', 'wo', 'zuijin', 'gongzuo', 'hen', 'mang', '，', 'meiyou', 'shijian', '。', 'jintian', 'xiawu', '/', 'qu', 'mai', 'keyi', 'ma', '？')],
+   note:'dōu … hǎo le ma? = ‘다 ~했어?’. 거절은 사과(fēicháng bàoqiàn) → 이유(zuìjìn gōngzuò hěn máng) → 다른 제안(jīntiān xiàwǔ … kěyǐ ma?) 순서예요.'},
+  {id:'u1q3', title:'주말 영화 약속을 잡을 때',
+   q:S('주말에 같이 영화 보는 거 어때?', 'zhoumo', 'yiqi', 'kan', 'dianying', '/', 'zenmeyang', '？'),
+   a:[S('좋은 생각이야! 〈비밀〉이 재미있다던데, 많은 사람이 나한테 추천했어. 영화 다 보고 나서 중국 음식 먹으러 갈래?', 'hao', 'zhuyi', '！', 'tingshuo', 'mimi', 'hen', 'youyisi', '，', 'hen', 'duo', 'ren', '/', 'tuijian', 'wo', 'kan', '。', 'kan', 'wan', 'dianying', 'yihou', '，', 'women', 'qu', 'chi', 'zhongguocai', '/', 'zenmeyang', '？')],
+   note:'tīngshuō = ‘~라고 들었어’. kàn wán … yǐhòu = ‘다 보고 나서’. 끝에 … zěnmeyàng?으로 한 번 더 제안하면 답변이 풍성해져요.'},
+  {id:'u1q4', title:'여행 제안을 거절할 때',
+   q:S('방학 때 같이 해외여행 가는 거 어때?', 'fangjia', 'de', 'shihou', '/', 'women', 'yiqi', 'qu', 'waiguo', 'lvxing', '/', 'zenmeyang', '？'),
+   a:[S('미안해, TSC 시험을 봐야 해서 같이 여행 못 가. 다음에 가자!', 'buhaoyisi', '，', 'wo', 'yaoW', 'canjia', 'kaoshi', '，', 'bu', 'neng', 'gen', 'ni', 'qu', 'lvxing', '，', 'xiaci', 'ba', '！')],
+   note:'bù hǎoyìsi = 가벼운 사과. yào cānjiā … kǎoshì = 시험을 봐야 해. gēn nǐ qù = 너랑 같이 가다. xià cì ba = 다음에 하자.'},
+  {id:'u1q5', title:'등산 약속 장소를 정할 때',
+   q:S('일요일에 등산하는데, 어디서 만나는 게 좋을까?', 'zhouri', 'pashan', '，', 'women', 'zai', 'nar', '/', 'jianmian', 'hao', 'ne', '？'),
+   a:[S('오후 두 시에 지하철역에서 만나자! 꼭 만나. 등산 끝나고 중국 음식 먹으러 갈래?', 'women', 'xiawu', 'liang', 'dian', '/', 'zai', 'ditiezhan', 'jian', 'ba', '！', 'bujianbusan', '。', 'pa', 'wan', 'shan', 'yihou', '，', 'women', 'qu', 'chi', 'zhongguocai', '/', 'zenmeyang', '？')],
+   note:'… hǎo ne? = ‘~하는 게 좋을까?’. 시간 → zài + 장소 → jiàn ba 순서. pá wán shān = 등산을 마치다.'},
+];
+/* 02 경험·안부·계획 (교재 단원) */
+const U2 = [
+  {id:'u2q1', title:'누구에게 편지를 쓰는지 물을 때',
+   q:S('누구에게 편지 쓰고 있어?', 'ni', 'zai', 'gei', 'shei', 'xie', 'xin', '？'),
+   a:[S('엄마에게 편지 쓰고 있어. 오늘이 엄마 생신이라서 생일 축하한다고 하고 싶어.', 'wo', 'zai', 'gei', 'mama', 'xie', 'xin', '，', 'yinwei', 'jintian', 'shi', 'mama', 'de', 'shengri', '，', 'wo', 'xiang', 'zhu', 'ta', 'shengrikuaile', '。')],
+   note:'gěi + 사람 + xiě xìn = ‘~에게 편지를 쓰다’. yīnwèi = ‘왜냐하면’(이유). zhù tā shēngrì kuàilè = 그녀의 생일을 축하하다.'},
+  {id:'u2q2', title:'크리스마스 계획을 물을 때',
+   q:S('올해 크리스마스에 뭐 할 계획이야?', 'jinnian', 'de', 'shengdanjie', '，', 'ni', 'dasuan', 'zuo', 'shenme', '？'),
+   a:[S('가족이랑 같이 동남아에 갈 계획이야. 그곳의 햇빛, 해변, 열대 과일을 정말 좋아해.', 'wo', 'dasuan', 'he', 'jiaren', 'yiqi', '/', 'qu', 'dongnanya', '。', 'wo', 'feichang', 'xihuan', '/', 'nar2', 'de', 'yangguang', '、', 'haitan', 'he', 'redai', 'shuiguo', '。')],
+   note:'dǎsuan + 동작 = ‘~할 계획이다’. 교재는 dǎsuan(뒤 경성)으로 적었어요(사전에는 dǎsuàn으로도 나와요). hé jiārén yìqǐ = 가족과 함께. nàr de … = 그곳의 ….'},
+  {id:'u2q3', title:'건강검진 계획을 물을 때',
+   q:S('언제 건강검진 받으러 갈 계획이야?', 'ni', 'dasuan', 'shenme', 'shihou', '/', 'qu', 'jiancha', 'shenti', '？'),
+   a:[S('내일 갈 계획이야. 1년에 한 번 건강검진을 받는 건 꼭 필요해. 검진 끝나고 같이 밥 먹자!', 'wo', 'dasuan', 'mingtian', 'qu', '。', 'yinian', 'zuo', 'yici', 'shenti', 'jiancha', '/', 'hen', 'youbiyao', '。', 'jiancha', 'wan', 'yihou', '，', 'women', 'yiqi', 'chifan', 'ba', '！')],
+   note:'shénme shíhou = ‘언제’. yì nián zuò yí cì = 1년에 한 번 하다. hěn yǒu bìyào = 꼭 필요하다. jiǎnchá wán yǐhòu = 검사를 마친 뒤.'},
+  {id:'u2q4', title:'눈 오는 주말 계획을 물을 때',
+   q:S('이번 주말에 눈이 온대. 뭐 할 계획이야?', 'zhege', 'zhoumo', 'xiaxue', '，', 'ni', 'dasuan', 'zuo', 'shenme', '？'),
+   a:[S('스키 타러 갈 계획이야. 스키를 타면서 아름다운 풍경을 감상하는 게 내 가장 큰 즐거움이야.', 'wo', 'dasuan', 'qu', 'huaxue', '，', 'yibian', 'huaxue', '，', 'yibian', 'xinshang', '/', 'meili', 'de', 'fengjing', '，', 'zhe', 'shi', 'wo', 'zui', 'daBig', 'de', 'lequ', '。')],
+   alt:[{s:S('스키 타러 갈 계획이야. 거기 풍경이 정말 아름다워서 아주 좋아.', 'wo', 'dasuan', 'qu', 'huaxue', '。', 'nar2', 'de', 'fengjing', 'hen', 'mei3', '，', 'wo', 'hen', 'xihuan', '。'),
+         why:'xīnshǎng(감상하다), lèqù(즐거움)가 어려우면 hěn měi(아름답다), hěn xǐhuan(좋아하다)으로 짧게 말해도 돼요.'}],
+   note:'yìbiān A, yìbiān B = ‘A하면서 B하다’. zuì dà de lèqù = 가장 큰 즐거움.'},
+  {id:'u2q5', title:'평소 운동하는지 물을 때',
+   q:S('평소에 운동해?', 'ni', 'pingshi', 'duanlian', 'shenti', 'ma', '？'),
+   a:[S('평소에 운동해. 운동은 몸에 좋을 뿐 아니라 스트레스도 풀 수 있어. 정말 일석이조야!', 'wo', 'pingshi', 'duanlian', 'shenti', '。', 'yundong', 'budan', 'dui', 'shenti', 'hao', '，', 'erqie', 'keyi', 'huanjie', 'yali', '。', 'zhen', 'shi', 'yijuliangde', '！')],
+   alt:[{s:S('평소에 운동해. 운동은 몸에 아주 좋아서 나는 운동을 정말 좋아해.', 'wo', 'pingshi', 'duanlian', 'shenti', '。', 'yundong', 'dui', 'shenti', 'hen', 'hao', '，', 'wo', 'hen', 'xihuan', 'yundong', '。'),
+         why:'búdàn … érqiě, huǎnjiě yālì, yì jǔ liǎng dé가 어려우면 이렇게 짧게 말해도 돼요.'}],
+   note:'búdàn A, érqiě B = ‘A할 뿐만 아니라 B도’. yì jǔ liǎng dé = 일석이조(한 번에 두 가지 이득).'},
+];
+const UNITS = [
+  {id:'u23', name:'교재 23쪽 · 제안과 부탁', items:ITEMS23},
+  {id:'u1', name:'01 제안·부탁', items:U1},
+  {id:'u2', name:'02 경험·안부·계획', items:U2},
+];
+const ALL = UNITS.flatMap(u => u.items);
+const unitOf = x => UNITS.find(u => u.items.includes(x));
+let unit = T.load('tsc-p3-unit', 'u23'); if (!UNITS.find(u => u.id === unit)) unit = 'u23';
+let ITEMS = UNITS.find(u => u.id === unit).items;
+
 /* ===== 패턴 ===== */
 const NEW = {
   refuse:S('미안해, 오늘 바빠서 도와줄 수 없어.', 'duibuqi', '，', 'wo', 'jintian', 'hen', 'mang', '，', 'bu', 'neng', 'bang', 'ni', '。'),
   when:S('좋아, 몇 시에 만나?', 'hao', 'a', '，', 'ji', 'dian', 'jian', '？'),
   look:S('좀 봐 줄 수 있어?', 'ni', 'neng', 'bang', 'wo', 'kankan', 'ma', '？'),
 };
-const it = i => ITEMS[i];
+const it = i => ITEMS23[i];
 const PATTERNS = [
   {t:'부탁하기', f:'nǐ (néng) bāng wǒ + 동작 + ba / ma?', d:'bāng 뒤에 ‘누구를’, 그다음 ‘무엇을’. ba는 부드러운 부탁, néng … ma?는 ‘~해 줄 수 있어?’', ex:[it(0).q, NEW.look]},
   {t:'받아들이기', f:'hǎo de, méi wèntí. / hǎo zhǔyi! / hǎo a', d:'부탁에는 hǎo de, méi wèntí, 제안에는 hǎo zhǔyi · hǎo a로 바로 반응하고, 이어서 구체적인 말을 덧붙여요.', ex:[it(0).a[0], it(3).a[0], NEW.when]},
@@ -103,12 +191,18 @@ const PATTERNS = [
   {t:'~을 …에 놓다', f:'bǎ + 물건 + fàng zài + 장소', d:'물건을 어디에 두는지 말할 때 쓰는 bǎ 문장.', ex:[it(0).a[1]]},
   {t:'~인지 알아?', f:'nǐ zhīdào + 궁금한 내용 + ma?', d:'대답은 zhīdào / bù zhīdào로 시작해요.', ex:[it(2).q, it(2).a[0]]},
   {t:'~했어?', f:'동작 + 목적어 + le ma?', d:'le는 목적어 뒤, ma 바로 앞.', ex:[it(4).a[1]]},
+  {t:'좀 ~하다', f:'동작 + yíxià', d:'부탁·권유를 부드럽게 해요. xiūxi yíxià = xiūxi xiūxi(좀 쉬다).', ex:[U1[0].a[0]]},
+  {t:'다 ~하고 나서', f:'동작 + wán + (목적어) + yǐhòu', d:'한 가지를 마친 뒤 다음 일을 말할 때.', ex:[U1[4].a[0], U2[2].a[0]]},
+  {t:'~할 계획이야', f:'dǎsuan + 동작', d:'계획을 물으면 Wǒ dǎsuan …로 시작해요.', ex:[U2[1].q, U2[1].a[0]]},
+  {t:'왜냐하면', f:'yīnwèi + 이유', d:'이유를 덧붙이면 답변이 길어져요.', ex:[U2[0].a[0]]},
+  {t:'~하면서 ~하다', f:'yìbiān A, yìbiān B', d:'두 동작을 동시에 할 때.', ex:[U2[3].a[0]]},
+  {t:'~뿐만 아니라 ~도', f:'búdàn A, érqiě B', d:'좋은 점을 두 가지 말할 때.', ex:[U2[4].a[0]]},
   {t:'앞으로 ~할 거야', f:'huì + 동작', d:'날씨·예정처럼 앞으로 일어날 일. jīntiān huì xiàyǔ = 오늘 비가 올 거래.', ex:[it(4).alt[0].s], tag:'추가'},
 ];
 
 const prog = T.progress('p3'), wprog = T.progress('p3w');
 const WORDS = Object.entries(W).filter(([k]) => !['haoC'].includes(k));
-function summary(){ const s = T.load('tsc-summary', {}); s.p3 = {done: prog.count(ITEMS.map(x => x.id)) + wprog.count(WORDS.map(x => 'w:' + x[0])), total: ITEMS.length + WORDS.length}; T.save('tsc-summary', s); }
+function summary(){ const s = T.load('tsc-summary', {}); s.p3 = {done: prog.count(ALL.map(x => x.id)) + wprog.count(WORDS.map(x => 'w:' + x[0])), total: ALL.length + WORDS.length}; T.save('tsc-summary', s); }
 const view = $('#view');
 
 /* ===== 조각 ===== */
@@ -119,15 +213,16 @@ function viewLearn(){
   const done = prog.count(ITEMS.map(x => x.id));
   let h = '<div class="card" id="statcard"><div class="row"><div class="stat"><b>' + done + '</b><span class="muted">/ ' + ITEMS.length + '문항 외움</span></div><span class="spacer"></span><button class="btn soft" type="button" data-go="exam">⏱ 실전 연습</button></div><div class="progress" style="margin-top:10px"><i style="width:' + (done / ITEMS.length * 100) + '%"></i></div>' +
     '<!--wrong--><div class="tip" style="background:var(--brand-soft)"><b style="color:var(--brand-text)">답변 공식</b><span>① 반응 한마디(hǎo de / duìbuqǐ / bù zhīdào) + ② 구체적인 정보 한두 문장(시간·장소·이유). 15초면 두 문장이 딱 좋아요.</span></div></div>';
-  const wrongN = ITEMS.filter(x => T.markState('p3', x.id) === 'wrong').length;
+  const wrongN = ALL.filter(x => T.markState('p3', x.id) === 'wrong').length;
   h = h.replace('<!--wrong-->', '<div class="row" style="margin-top:10px">' + T.wrongToggle(onlyWrong, wrongN) + '</div>');
-  const list = onlyWrong ? ITEMS.filter(x => T.markState('p3', x.id) === 'wrong') : ITEMS;
+  h = '<div class="chips" style="margin-top:14px">' + UNITS.map(u => '<button class="chip" type="button" data-unit="' + u.id + '" aria-pressed="' + (u.id === unit && !onlyWrong) + '">' + esc(u.name) + '<span class="n">' + prog.count(u.items.map(x => x.id)) + '/' + u.items.length + '</span></button>').join('') + '</div>' + h;
+  const list = onlyWrong ? ALL.filter(x => T.markState('p3', x.id) === 'wrong') : ITEMS;
   if (!list.length) h += T.emptyWrong;
-  list.forEach(x => { const i = ITEMS.indexOf(x);
+  list.forEach(x => { const u = unitOf(x), i = u.items.indexOf(x);
     const on = prog.has(x.id);
-    h += '<article class="card' + (on ? ' done' : '') + '" data-q="' + x.id + '"><div class="card-head"><span class="badge">문항 ' + (i + 1) + '</span><span class="label">' + esc(x.title) + '</span>' + T.markBtns('p3', x.id) + '</div>' +
+    h += '<article class="card' + (on ? ' done' : '') + '" data-q="' + x.id + '"><div class="card-head"><span class="badge">' + (onlyWrong ? esc(u.name.split(' · ')[0].split(' ')[0]) + ' · ' : '') + '문항 ' + (i + 1) + '</span><span class="label">' + esc(x.title) + '</span>' + T.markBtns('p3', x.id) + '</div>' +
       '<p class="small muted" style="margin:0">질문 — 중국어로 말해 보세요</p><p class="ko" style="margin:0">' + esc(x.q.ko) + '</p>' + T.revealHTML(T.sayHTML(x.q)) +
-      sayBlock(x.a[0], '답변 ① 반응') + sayBlock(x.a[1], '답변 ② 이어서') +
+      x.a.map((a, k) => sayBlock(a, x.a.length > 1 ? (k ? '답변 ② 이어서' : '답변 ① 반응') : '모범 답변')).join('') +
       '<div class="tip"><b>TIP</b><span>' + esc(x.note) + '</span></div>' +
       (x.alt ? '<details class="more"><summary>더 자연스러운 표현 (추천)</summary><p class="small muted" style="margin:6px 0 0">교재 문장이 기본이에요. 아래는 회화에서 더 자연스럽게 쓰는 말이에요.</p>' + x.alt.map(a => '<div style="margin-top:10px"><p class="ko" style="margin:0">' + esc(a.s.ko) + '</p><div class="reveal open" style="margin-top:4px">' + T.sayHTML(a.s) + '</div><p class="small muted" style="margin:4px 0 0">💡 ' + esc(a.why) + '</p></div>').join('') + '</details>' : '') +
       (() => { const ks = [...new Set([x.q, ...x.a].flatMap(s => s.words))]; return '<details class="more"><summary>단어 (' + ks.length + ')</summary><div class="words">' + ks.map(k => T.wordHTML(W[k])).join('') + '</div></details>'; })() + '</article>';
@@ -176,7 +271,7 @@ function viewWords(){
 /* ===== 실전 ===== */
 const exam = {running: false, results: []};
 function viewExam(){
-  view.innerHTML = '<div class="card"><h3 style="margin-top:0">⏱ 실전처럼 연습하기</h3><p class="small muted">실제 시험과 같아요: 5문항 · 질문을 읽고 <b>준비 2초</b>, <b>15초 동안 답변</b>.</p>' +
+  view.innerHTML = '<div class="card"><h3 style="margin-top:0">⏱ 실전처럼 연습하기</h3><p class="small muted">실제 시험과 같아요: <b>' + esc(UNITS.find(u => u.id === unit).name) + '</b> 5문항 · 질문을 읽고 <b>준비 2초</b>, <b>15초 동안 답변</b>.</p>' +
     '<button class="btn primary big" type="button" id="start" style="width:100%">시작하기</button></div>' + (exam.results.length ? resultsHTML() : '');
   $('#start').onclick = runExam; bindResults();
 }
@@ -205,7 +300,7 @@ function resultsHTML(){
   return '<h2>결과 확인</h2><p class="small muted">모범 답변과 비교하고, 잘 말한 문항은 ‘외웠어요’로 표시하세요.</p>' + exam.results.map(({x}, i) =>
     '<article class="card" data-q="' + x.id + '"><div class="card-head"><span class="badge">문항 ' + (i + 1) + '</span><span class="label">' + esc(x.title) + '</span>' + T.markBtns('p3', x.id) + '</div>' +
     '<p class="ko" style="margin:0">' + esc(x.q.ko) + '</p>' + '<div class="reveal open">' + T.sayHTML(x.q) + '</div>' +
-    sayBlock(x.a[0], '모범 답변 ①', true) + sayBlock(x.a[1], '모범 답변 ②', true) + '</article>').join('');
+    x.a.map((a, k) => sayBlock(a, x.a.length > 1 ? '모범 답변 ' + (k ? '②' : '①') : '모범 답변', true)).join('') + '</article>').join('');
 }
 function bindResults(){}
 
@@ -217,14 +312,14 @@ function go(t){
   if (exam.running) { T.toast('실전 연습 중이에요. ‘그만하기’를 먼저 눌러 주세요.'); T.tabs($('#tabs'), TABS, tab, go); return; }
   tab = t; T.save('tsc-p3-tab', t); T.tabs($('#tabs'), TABS, t, go); VIEWS[t]();
 }
-view.addEventListener('click', e => { if (e.target.closest('[data-wrongonly]')) { onlyWrong = !onlyWrong; VIEWS[tab](); return; } if (e.target.closest('[data-wordswrong]')) { wordsWrong = !wordsWrong; deck = []; VIEWS[tab](); return; } const g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go); scrollTo({top: 0}); } });
+view.addEventListener('click', e => { if (e.target.closest('[data-wrongonly]')) { onlyWrong = !onlyWrong; VIEWS[tab](); return; } const ub = e.target.closest('[data-unit]'); if (ub) { unit = ub.dataset.unit; T.save('tsc-p3-unit', unit); ITEMS = UNITS.find(u => u.id === unit).items; onlyWrong = false; VIEWS[tab](); return; } if (e.target.closest('[data-wordswrong]')) { wordsWrong = !wordsWrong; deck = []; VIEWS[tab](); return; } const g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go); scrollTo({top: 0}); } });
 document.addEventListener('tsc:settings', () => { if (tab !== 'exam') VIEWS[tab](); });
 T.onMark = () => {
   summary();
   if (tab === 'learn') { const el = $('#statcard'); if (el) { const d = prog.count(ITEMS.map(x => x.id)); el.querySelector('.stat b').textContent = d; el.querySelector('.progress i').style.width = (d / ITEMS.length * 100) + '%'; } }
   if (tab === 'words' && wmode === 'list') viewWords();
 };
-T.exampleSource = () => [...ITEMS.flatMap(x => [x.q, ...x.a, ...(x.alt || []).map(a => a.s)]), ...Object.values(NEW)];
+T.exampleSource = () => [...ALL.flatMap(x => [x.q, ...x.a, ...(x.alt || []).map(a => a.s)]), ...Object.values(NEW)];
 summary();
 go(tab);
 </script>
