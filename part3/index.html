@@ -164,13 +164,12 @@ const U2 = [
    note:'búdàn A, érqiě B = ‘A할 뿐만 아니라 B도’. yì jǔ liǎng dé = 일석이조(한 번에 두 가지 이득).'},
 ];
 const UNITS = [
-  {id:'u23', name:'교재 23쪽 · 제안과 부탁', items:ITEMS23},
-  {id:'u1', name:'01 제안·부탁', items:U1},
+  {id:'u1', name:'01 제안·부탁', items:[...ITEMS23, ...U1]},
   {id:'u2', name:'02 경험·안부·계획', items:U2},
 ];
 const ALL = UNITS.flatMap(u => u.items);
 const unitOf = x => UNITS.find(u => u.items.includes(x));
-let unit = T.load('tsc-p3-unit', 'u23'); if (!UNITS.find(u => u.id === unit)) unit = 'u23';
+let unit = T.load('tsc-p3-unit', 'u1'); if (!UNITS.find(u => u.id === unit)) unit = 'u1';
 let ITEMS = UNITS.find(u => u.id === unit).items;
 
 /* ===== 패턴 ===== */
@@ -271,7 +270,7 @@ function viewWords(){
 /* ===== 실전 ===== */
 const exam = {running: false, results: []};
 function viewExam(){
-  view.innerHTML = '<div class="card"><h3 style="margin-top:0">⏱ 실전처럼 연습하기</h3><p class="small muted">실제 시험과 같아요: <b>' + esc(UNITS.find(u => u.id === unit).name) + '</b> 5문항 · 질문을 읽고 <b>준비 2초</b>, <b>15초 동안 답변</b>.</p>' +
+  view.innerHTML = '<div class="card"><h3 style="margin-top:0">⏱ 실전처럼 연습하기</h3><p class="small muted">실제 시험과 같아요: <b>' + esc(UNITS.find(u => u.id === unit).name) + '</b> ' + ITEMS.length + '문항 · 질문을 읽고 <b>준비 2초</b>, <b>15초 동안 답변</b>.</p>' +
     '<button class="btn primary big" type="button" id="start" style="width:100%">시작하기</button></div>' + (exam.results.length ? resultsHTML() : '');
   $('#start').onclick = runExam; bindResults();
 }
