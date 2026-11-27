@@ -118,6 +118,7 @@ body.hide-py rt{visibility:hidden}
 .reveal .cover{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:6px;border:1px dashed var(--line);border-radius:12px;background:var(--surface-2);color:var(--muted);font-weight:650;font-size:14px;width:100%}
 .reveal .cover:hover{color:var(--ink)}
 .reveal.open .cover{display:none}
+.reveal.open{cursor:pointer}
 .reveal:not(.open) .say{visibility:hidden}
 
 /* 성조선 */

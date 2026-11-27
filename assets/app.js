@@ -212,9 +212,17 @@ T.sayHTML = (row, opt = {}) => {
   return '<div class="say">' + lines.join('') + '</div>';
 };
 T.revealHTML = (inner, open) => '<div class="reveal' + (open || !settings.cover ? ' open' : '') + '">' + inner + '<button class="cover" type="button">👀 눌러서 보기</button></div>';
+/* 열린 답에서 글자가 없는 빈 곳을 누르면 다시 가리기 (단어·버튼·글자를 누른 경우는 그대로) */
+const onText = (el, x, y) => { const r = document.createRange(); const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  while (w.nextNode()) { if (!w.currentNode.textContent.trim()) continue; r.selectNodeContents(w.currentNode); for (const b of r.getClientRects()) if (x >= b.left - 2 && x <= b.right + 2 && y >= b.top - 2 && y <= b.bottom + 2) return true; }
+  return false; };
 document.addEventListener('click', e => {
   const c = e.target.closest('.reveal .cover');
-  if (c) c.parentElement.classList.add('open');
+  if (c) { c.parentElement.classList.add('open'); return; }
+  const rv = e.target.closest('.reveal.open');
+  if (!rv || !settings.cover || e.target.closest('.tw, button, a, svg')) return;
+  if (getSelection && String(getSelection()).length) return;
+  if (!onText(rv, e.clientX, e.clientY)) rv.classList.remove('open');
 });
 
 /* 듣기(음성) 기능은 사용하지 않음 — 사용자 요청 */
