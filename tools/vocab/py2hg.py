@@ -1,7 +1,7 @@
 # 병음 → 한글 발음 (사이트 규칙). 된소리는 화면에서 성조로 자동 처리되므로 여기서는 예사소리로 만든다.
 import re, unicodedata
 V = 'aeiouüāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ'
-SYL = re.compile(r"(?:zh|ch|sh|[bpmfdtnlgkhjqxrzcsyw])?[" + V + r"v]+(?:ng|n|r)?(?![" + V + "])", re.I)
+SYL = re.compile(r"(?:zh|ch|sh|[bpmfdtnlgkhjqxrzcsyw])?[" + V + r"v]+(?:ngr|nr|ng|n|r)?(?![" + V + "])", re.I)
 MARKS = {'a':'āáǎà','e':'ēéěè','i':'īíǐì','o':'ōóǒò','u':'ūúǔù','ü':'ǖǘǚǜ'}
 BASE = {c:(b, i+1) for b, m in MARKS.items() for i, c in enumerate(m)}
 def plain(s): return ''.join(BASE[c][0] if c in BASE else c for c in s.lower()).replace('v', 'ü')
@@ -45,6 +45,7 @@ def conv(syl):
         if ini == 'sh':
             parts = {'a':[('ㅑ','')],'ai':[('ㅑ',''),('ㅣ','')],'an':[('ㅑ','ㄴ')],'ang':[('ㅑ','ㅇ')],'ao':[('ㅑ',''),('ㅗ','')],'ei':[('ㅖ',''),('ㅣ','')],
                      'u':[('ㅠ','')],'ui':[('ㅠ',''),('ㅔ',''),('ㅣ','')],'un':[('ㅠ',''),('ㅓ','ㄴ')]}.get(fin, parts)
+    if r and len(parts) > 1 and parts[-1] == ('ㅣ', ''): parts = parts[:-1]  # 얼화: ai·ei·ui 뒤 i는 빠진다 (háir → 할)
     out = ''
     for k, (jung, jong) in enumerate(parts):
         out += mk(CHO[ini] if k == 0 else 11, jung, jong)

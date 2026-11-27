@@ -9,6 +9,7 @@
 <script src="../assets/app.js"></script>
 <script src="../assets/words.js"></script>
 <script src="data.js"></script>
+<script src="extra.js"></script>
 </head>
 <body class="has-bottom">
 <main class="wrap">
@@ -22,7 +23,7 @@
   <p class="foot">외운 표시는 이 기기 브라우저에만 저장돼요.</p>
 </main>
 <script>
-const T = TSC, {esc, $, $$} = T, D = window.P2;
+const T = TSC, {esc, $, $$} = T, D = window.P2, X = window.P2X;
 T.topbar({title: '2부분 · 그림 보고 답하기', sub: 'TSC 중국어 말하기'});
 T.save('tsc-last', {href: 'part2/', name: '2부분 그림 보고 답하기'});
 const prog = T.progress('p2');
@@ -35,7 +36,7 @@ const rowObj = r => ({py: r[1], hg: r[2], tones: r[3]});
 const IDS = {
   ex: D.ex.map((_, i) => 'ex:' + i),
   vocab: D.v.flatMap((g, t) => g[1].map((_, i) => 'v:' + t + ':' + i)),
-  pattern: [...D.patterns.map((_, i) => 'pt:' + i), ...D.app.map((_, i) => 'app:' + i)],
+  pattern: [...D.patterns.map((_, i) => 'pt:' + i), ...D.app.map((_, i) => 'app:' + i), ...X.patterns.flatMap((p, i) => p.ex.map((_, j) => 'px:' + i + ':' + j))],
   appendix: D.appendix.map((_, i) => 'ap:' + i),
 };
 const ALL_IDS = Object.values(IDS).flat();
@@ -116,10 +117,13 @@ function viewVocab(){
 /* ===== 문장 패턴 ===== */
 function viewPattern(){
   view.innerHTML = progressCard(IDS.pattern, '문장 외움') +
-    '<h2>문장 패턴</h2><p class="small muted">먼저 질문을 말해 보고, 숫자나 장소를 바꿔 한 번 더 말해 보세요.</p>' +
+    '<h2>교재 문장 패턴</h2><p class="small muted">먼저 질문을 말해 보고, 숫자나 장소를 바꿔 한 번 더 말해 보세요.</p>' +
     D.patterns.map((r, i) => (!onlyWrong || isWrong('pt:' + i)) ? rowCard(r, 'pt:' + i) : '').join('') +
     '<h2>응용문제 모아 보기</h2>' +
-    D.app.map((r, i) => { if (onlyWrong && !isWrong('app:' + i)) return ''; const n = D.appNotes[r[0]]; const g = n && D.gloss[n[0]]; return rowCard(r, 'app:' + i, n ? (g ? g[1] + ' (' + g[0] + ') · ' : '') + n[1] : ''); }).join('');
+    D.app.map((r, i) => { if (onlyWrong && !isWrong('app:' + i)) return ''; const n = D.appNotes[r[0]]; const g = n && D.gloss[n[0]]; return rowCard(r, 'app:' + i, n ? (g ? g[1] + ' (' + g[0] + ') · ' : '') + n[1] : ''); }).join('') +
+    '<h2 style="margin-top:28px">추가 패턴 <span class="badge accent" style="vertical-align:3px">교재 밖</span></h2><p class="small muted">교재에는 없지만 그림 질문(비교·사물 배치)에 자주 쓰는 HSK 3급 기본 문법이에요.</p>' +
+    X.patterns.map((p, i) => { const rows = p.ex.map((r, j) => (!onlyWrong || isWrong('px:' + i + ':' + j)) ? rowCard(r, 'px:' + i + ':' + j) : '').join(''); if (onlyWrong && !rows) return '';
+      return '<article class="card" style="padding:14px 16px"><div class="card-head"><span class="badge">' + (i + 1) + '</span><span class="label" style="color:var(--ink);font-size:16px">' + esc(p.t) + '</span></div><p style="font-size:17px;font-weight:650;margin:0 0 4px;color:var(--brand-text)">' + esc(p.f) + '</p><p class="small muted" style="margin:0">' + esc(p.d) + '</p>' + rows + '</article>'; }).join('');
   bindDone();
 }
 
@@ -232,6 +236,7 @@ T.addLexList([
   ['túshūguǎn','투|슈|관','도서관'], ['nánháizi','난|하이|즈','남자아이'], ['yéye','예|예','할아버지'], ['zuǒbian','쭤|볜','왼쪽'],
 ]);
 T.addLexList([['hào','하오','호 (방 번호)']]);
+T.addLexList(X.lex);
 /* 뜻이 여러 개인 단어: 문장에 맞는 뜻 고르기 */
 const NUMS = ['líng','yī','yí','yì','èr','liǎng','sān','sì','wǔ','liù','qī','bā','jiǔ','shí','bǎi','yāo'];
 T.lexPick = (key, list, c) => {
@@ -251,7 +256,7 @@ T.lexPick = (key, list, c) => {
     default: return null;
   }
 };
-T.exampleSource = () => [...D.patterns, ...D.ex.flat(), ...D.app, ...D.appendix.flat()].map(r => ({py: r[1], hg: r[2], tones: r[3], ko: r[0]}));
+T.exampleSource = () => [...D.patterns, ...D.ex.flat(), ...D.app, ...D.appendix.flat(), ...X.patterns.flatMap(p => p.ex)].map(r => ({py: r[1], hg: r[2], tones: r[3], ko: r[0]}));
 summary();
 go(tab);
 </script>

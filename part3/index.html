@@ -76,7 +76,12 @@ const W = {
   duibuqi:['对不起','duìbuqǐ','두에이|부|치',[4,0,3],'미안해'], mang:['忙','máng','망',[2],'바쁘다'], a:['啊','a','아',[0],'(말끝 어기)'], ji:['几','jǐ','지',[3],'몇'], kankan:['看看','kànkan','칸|칸',[4,0],'한번 보다'],
 };
 /* S('한국어', '단어키', ..., '，', '/', ...) */
-const S = (ko, ...keys) => { const s = T.sentence(keys.map(k => W[k] || k), ko); s.words = keys.filter(k => W[k]); return s; };
+/* 추가 패턴 예문에만 쓰는 단어 (단어 탭에는 넣지 않음) */
+const WX = {yijing:['已经','yǐjīng','이|징',[3,1],'이미, 벌써'], haiM:['还','hái','하이',[2],'아직'], meiN:['没','méi','메이',[2],'~하지 않았다'], neA:['呢','ne','너',[0],'(아직 ~ 중이라는 느낌)'],
+  guo:['过','guo','궈',[0],'~한 적 있다 (경험)'], zhongguo:['中国','Zhōngguó','중|궈',[1,2],'중국'], liang2:['两','liǎng','량',[3],'둘'], ci:['次','cì','츠',[4],'번, 회'],
+  ruguo:['如果','rúguǒ','루|궈',[2,3],'만약 ~라면'], jiu:['就','jiù','지오우',[4],'(그러면) 바로'], jia:['家','jiā','자',[1],'집'], kong:['空','kòng','쿵',[4],'틈, 시간'], lai:['来','lái','라이',[2],'오다'],
+  wanr:['玩儿','wánr','왈',[2],'놀다'], ranhou:['然后','ránhòu','란|허우',[2,4],'그다음에'], yinhang:['银行','yínháng','인|항',[2,2],'은행'], chaoshi:['超市','chāoshì','차오|스',[1,4],'슈퍼마켓']};
+const S = (ko, ...keys) => { const s = T.sentence(keys.map(k => W[k] || WX[k] || k), ko); s.words = keys.filter(k => W[k] || WX[k]); return s; };
 
 /* ===== 문항 (교재 23쪽) ===== */
 const ITEMS23 = [
@@ -179,6 +184,19 @@ const NEW = {
   look:S('좀 봐 줄 수 있어?', 'ni', 'neng', 'bang', 'wo', 'kankan', 'ma', '？'),
 };
 const it = i => ITEMS23[i];
+/* 추가 패턴 예문 (교재 밖, HSK 3~4급 기본 문법) */
+const NX = {
+  chileQ:S('밥 먹었어?', 'ni', 'chifan', 'le', 'ma', '？'),
+  yijing:S('응, 벌써 먹었어.', 'wo', 'yijing', 'chi', 'le', '。'),
+  haimei:S('아직 안 먹었어.', 'wo', 'haiM', 'meiN', 'chi', 'neA', '。'),
+  guoQ:S('중국에 가 본 적 있어?', 'ni', 'qu', 'guo', 'zhongguo', 'ma', '？'),
+  guoA:S('두 번 가 봤어.', 'wo', 'qu', 'guo', 'liang2', 'ci', '。'),
+  guoN:S('아직 가 본 적 없어.', 'wo', 'haiM', 'meiN', 'qu', 'guo', '。'),
+  ruguo1:S('내일 비가 오면 우리 집에서 영화 보자.', 'ruguo', 'mingtian', 'xiayu', '，', 'women', 'jiu', 'zai', 'jia', 'kan', 'dianying', 'ba', '。'),
+  ruguo2:S('시간 있으면 우리 집에 놀러 와.', 'ruguo', 'ni', 'you', 'kong', '，', 'jiu', 'lai', 'wo', 'jia', 'wanr', 'ba', '。'),
+  xian1:S('우리 먼저 밥 먹고, 그다음에 영화 보러 가자.', 'women', 'xian', 'chifan', '，', 'ranhou', 'qu', 'kan', 'dianying', 'ba', '。'),
+  xian2:S('나는 먼저 은행에 가고, 그다음에 슈퍼에 가.', 'wo', 'xian', 'qu', 'yinhang', '，', 'ranhou', 'qu', 'chaoshi', '。'),
+};
 const PATTERNS = [
   {t:'부탁하기', f:'nǐ (néng) bāng wǒ + 동작 + ba / ma?', d:'bāng 뒤에 ‘누구를’, 그다음 ‘무엇을’. ba는 부드러운 부탁, néng … ma?는 ‘~해 줄 수 있어?’', ex:[it(0).q, NEW.look]},
   {t:'받아들이기', f:'hǎo de, méi wèntí. / hǎo zhǔyi! / hǎo a', d:'부탁에는 hǎo de, méi wèntí, 제안에는 hǎo zhǔyi · hǎo a로 바로 반응하고, 이어서 구체적인 말을 덧붙여요.', ex:[it(0).a[0], it(3).a[0], NEW.when]},
@@ -197,6 +215,10 @@ const PATTERNS = [
   {t:'~하면서 ~하다', f:'yìbiān A, yìbiān B', d:'두 동작을 동시에 할 때.', ex:[U2[3].a[0]]},
   {t:'~뿐만 아니라 ~도', f:'búdàn A, érqiě B', d:'좋은 점을 두 가지 말할 때.', ex:[U2[4].a[0]]},
   {t:'앞으로 ~할 거야', f:'huì + 동작', d:'날씨·예정처럼 앞으로 일어날 일. jīntiān huì xiàyǔ = 오늘 비가 올 거래.', ex:[it(4).alt[0].s], tag:'추가'},
+  {t:'벌써 ~했어 / 아직 안 했어', f:'yǐjīng + 동작 + le / hái méi + 동작 + ne', d:'‘~했어?’ 질문에 바로 답하는 틀. 안 했을 때는 le를 빼고 끝에 ne를 붙여요. (HSK 3급 문법)', ex:[NX.chileQ, NX.yijing, NX.haimei], tag:'추가'},
+  {t:'~해 본 적 있다', f:'동작 + guo', d:'경험을 물으면 동사 뒤에 guo. 없으면 méi(yǒu) + 동작 + guo. (HSK 2~3급 문법)', ex:[NX.guoQ, NX.guoA, NX.guoN], tag:'추가'},
+  {t:'만약 ~하면', f:'rúguǒ A, (주어) jiù B', d:'조건을 먼저 말하고 jiù 뒤에 할 일을 말해요. 제안·약속 질문에 쓰기 좋아요. (HSK 3급 문법)', ex:[NX.ruguo1, NX.ruguo2], tag:'추가'},
+  {t:'먼저 ~하고 그다음에', f:'xiān A, ránhòu B', d:'두 가지 일을 순서대로 말할 때. 계획 질문에 답이 길어져요. (HSK 3급 문법)', ex:[NX.xian1, NX.xian2], tag:'추가'},
 ];
 
 const prog = T.progress('p3'), wprog = T.progress('p3w');
@@ -231,10 +253,12 @@ function viewLearn(){
 
 /* ===== 패턴 ===== */
 function viewPattern(){
-  view.innerHTML = '<p class="small muted" style="margin-top:14px">교재 문장에서 뽑은 말하기 틀이에요. <span class="badge accent">추가</span> 표시는 시험에 자주 나오는 상황이라 새로 넣은 패턴이에요.</p>' +
-    PATTERNS.map((p, i) => '<article class="card"><div class="card-head"><span class="badge">' + (i + 1) + '</span><span class="label" style="color:var(--ink);font-size:16px">' + esc(p.t) + '</span>' + (p.tag ? '<span class="badge accent">' + p.tag + '</span>' : '') + '</div>' +
+  const card = (p, i) => '<article class="card"><div class="card-head"><span class="badge">' + (i + 1) + '</span><span class="label" style="color:var(--ink);font-size:16px">' + esc(p.t) + '</span></div>' +
       '<p style="font-size:18px;font-weight:650;margin:0 0 4px;color:var(--brand-text)">' + esc(p.f) + '</p><p class="small muted" style="margin:0">' + esc(p.d) + '</p>' +
-      p.ex.map(s => '<div style="margin-top:10px"><p class="ko" style="margin:0;font-size:15px">' + esc(s.ko) + '</p>' + T.revealHTML(T.sayHTML(s)) + '</div>').join('') + '</article>').join('');
+      p.ex.map(s => '<div style="margin-top:10px"><p class="ko" style="margin:0;font-size:15px">' + esc(s.ko) + '</p>' + T.revealHTML(T.sayHTML(s)) + '</div>').join('') + '</article>';
+  const base = PATTERNS.filter(p => !p.tag), extra = PATTERNS.filter(p => p.tag);
+  view.innerHTML = '<h2 style="margin-top:14px">교재 패턴</h2><p class="small muted">교재 문장에서 뽑은 말하기 틀이에요. 예문은 교재 문장이에요.</p>' + base.map(card).join('') +
+    '<h2 style="margin-top:28px">추가 패턴 <span class="badge accent" style="vertical-align:3px">교재 밖</span></h2><p class="small muted">교재에는 없지만 3부분 일상 질문에 자주 쓰는 HSK 3급 기본 문법이에요. 예문은 대부분 새로 만든 문장이에요.</p>' + extra.map(card).join('');
 }
 
 /* ===== 단어 ===== */
@@ -318,7 +342,7 @@ T.onMark = () => {
   if (tab === 'learn') { const el = $('#statcard'); if (el) { const d = prog.count(ITEMS.map(x => x.id)); el.querySelector('.stat b').textContent = d; el.querySelector('.progress i').style.width = (d / ITEMS.length * 100) + '%'; } }
   if (tab === 'words' && wmode === 'list') viewWords();
 };
-T.exampleSource = () => [...ALL.flatMap(x => [x.q, ...x.a, ...(x.alt || []).map(a => a.s)]), ...Object.values(NEW)];
+T.exampleSource = () => [...ALL.flatMap(x => [x.q, ...x.a, ...(x.alt || []).map(a => a.s)]), ...Object.values(NEW), ...Object.values(NX)];
 summary();
 go(tab);
 </script>

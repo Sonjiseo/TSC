@@ -5,9 +5,9 @@ const path = require('path');
 const ROOT = 'file://' + path.resolve(__dirname, '..', '..') + '/';
 const CHECK = `(() => {
   const rows = [];
-  if (window.P2) [...P2.patterns, ...P2.ex.flat(), ...P2.app, ...P2.appendix.flat()].forEach(r => rows.push({py: r[1], ko: r[0]}));
+  if (window.P2) [...P2.patterns, ...P2.ex.flat(), ...P2.app, ...P2.appendix.flat(), ...(window.P2X ? P2X.patterns.flatMap(p => p.ex) : [])].forEach(r => rows.push({py: r[1], ko: r[0]}));
   if (typeof QS !== 'undefined') { QS.forEach(q => rows.push(q.q)); answers().forEach(a => a && rows.push(a)); QS.forEach(q => q.more.forEach(([hz, py, ko]) => rows.push({py, ko}))); }
-  if (typeof ALL !== 'undefined') { ALL.forEach(x => [x.q, ...x.a, ...(x.alt || []).map(a => a.s)].forEach(s => rows.push(s))); Object.values(NEW).forEach(s => rows.push(s)); }
+  if (typeof ALL !== 'undefined') { ALL.forEach(x => [x.q, ...x.a, ...(x.alt || []).map(a => a.s)].forEach(s => rows.push(s))); Object.values(NEW).forEach(s => rows.push(s)); if (typeof NX !== 'undefined') Object.values(NX).forEach(s => rows.push(s)); }
   if (window.VOC) VOC.forEach(c => c.words.forEach(w => (w.ex || []).forEach(e => rows.push(e))));
   const miss = {};
   rows.forEach(r => { const d = document.createElement('div'); d.innerHTML = TSC.sayHTML(r); const l = d.querySelector('.py'); if (!l) return;

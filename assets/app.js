@@ -275,7 +275,7 @@ document.addEventListener('click', e => {
   const wrap = b.closest('.marks'), part = wrap.dataset.part, id = wrap.dataset.mid;
   const v = T.markState(part, id) === b.dataset.mark ? '' : b.dataset.mark;
   T.setMark(part, id, v);
-  const host = wrap.closest('.card, .word-wrap');
+  const host = wrap.closest('.vrow, .card, .word-wrap');
   if (host) { host.classList.toggle('done', v === 'done'); host.classList.toggle('wrong', v === 'wrong'); }
   wrap.outerHTML = T.markBtns(part, id);
   T.onMark && T.onMark(part, id, v);

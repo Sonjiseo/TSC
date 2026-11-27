@@ -57,7 +57,7 @@ EX = {
 'weather:xiàtiān': [('夏天我常常去游泳。','Xiàtiān wǒ chángcháng qù yóuyǒng.','여름에 저는 자주 수영하러 가요.'),
                     ('韩国的夏天很热。','Hánguó de xiàtiān / hěn rè.','한국의 여름은 더워요.')],
 'weather:dōngtiān': [('冬天我喜欢去滑雪。','Dōngtiān wǒ xǐhuan qù huáxuě.','겨울에는 스키 타러 가는 걸 좋아해요.'),
-                     ('今年冬天很冷。','Jīnnián dōngtiān hěn lěng.','올겨울은 정말 추워요.')],
+                     ('今年冬天很冷。','Jīnnián dōngtiān hěn lěng.','올겨울은 많이 추워요.')],
 'weather:tiānqì': [('今天天气怎么样？','Jīntiān tiānqì zěnmeyàng?','오늘 날씨 어때요?'),
                    ('今天天气很好，我们去公园吧。','Jīntiān tiānqì hěn hǎo, wǒmen qù gōngyuán ba.','오늘 날씨가 좋아요. 우리 공원에 가자.')],
 'weather:xià yǔ': [('外边下雨了，你带伞了吗？','Wàibian xià yǔ le, nǐ dài sǎn le ma?','밖에 비가 와요. 우산 가져왔어요?'),
