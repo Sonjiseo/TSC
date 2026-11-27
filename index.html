@@ -17,6 +17,7 @@
   </section>
   <div id="cont"></div>
   <a class="card row" href="vocab/" id="voccard" style="text-decoration:none;color:inherit"><span style="font-size:28px">📚</span><span style="flex:1"><b>주제별 단어장</b><br><span class="small muted" id="vocstat">단어 564개 (교재 482 + 기초 82) · 양사 35개 · ★ 3급 핵심 160개</span></span><span class="btn soft">열기</span></a>
+  <a class="card row" href="grammar/" id="grcard" style="text-decoration:none;color:inherit"><span style="font-size:28px">🧩</span><span style="flex:1"><b>문법·표현</b><br><span class="small muted" id="grstat">교재 문법 13과 · 추가 문법 12 · 표현 18 · 통째 암기 문장 31</span></span><span class="btn soft">열기</span></a>
   <h2>파트 선택</h2>
   <div class="parts" id="parts"></div>
   <div class="card">
@@ -51,9 +52,10 @@ $('#parts').innerHTML = PARTS.map(([n, ko, zh, q, prep, ans, href]) => {
     (href ? '<span class="row small muted" style="margin-top:6px"><span>' + (s ? '진도 ' + pct + '% · ' + s.done + '/' + s.total + (wrong ? ' · <span style="color:var(--accent);font-weight:700">✗ 틀린 것 ' + wrong + '</span>' : '') : '아직 시작 전') + '</span></span><span class="progress"><i style="width:' + pct + '%"></i></span>' : '<span class="small muted" style="margin-top:6px">준비 중</span>');
   return href ? '<a class="part" href="' + href + '">' + inner + '</a>' : '<div class="part soon">' + inner + '</div>';
 }).join('');
+if (sum.gr) $('#grstat').textContent = '문법·표현 ' + sum.gr.done + ' / ' + sum.gr.total + ' 외움 · 교재 13과 · 통째 암기 문장 31';
 if (sum.voc) $('#vocstat').textContent = '★ 핵심 단어 ' + sum.voc.done + ' / ' + sum.voc.total + ' 외움 · 단어 564개 · 양사 35개';
 const last = T.load('tsc-last', null);
-if (last && /^(part\d|vocab)\/$/.test(last.href)) $('#cont').innerHTML = '<a class="card row" href="' + esc(last.href) + '" style="text-decoration:none;color:inherit;margin-top:18px"><span style="font-size:28px">▶</span><span style="flex:1"><span class="small muted">이어서 학습하기</span><br><b>' + esc(last.name) + '</b></span><span class="btn primary">계속</span></a>';
+if (last && /^(part\d|vocab|grammar)\/$/.test(last.href)) $('#cont').innerHTML = '<a class="card row" href="' + esc(last.href) + '" style="text-decoration:none;color:inherit;margin-top:18px"><span style="font-size:28px">▶</span><span style="flex:1"><span class="small muted">이어서 학습하기</span><br><b>' + esc(last.name) + '</b></span><span class="btn primary">계속</span></a>';
 </script>
 </body>
 </html>

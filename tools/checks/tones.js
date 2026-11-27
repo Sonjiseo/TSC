@@ -20,12 +20,13 @@ const CHECK = `(() => {
   if (typeof ALL !== 'undefined') { ALL.forEach(x => [x.q, ...x.a, ...(x.alt || []).map(a => a.s)].forEach(s => check('part3 문장', s.py, s.tones))); Object.values(NEW).forEach(s => check('part3 추가예문', s.py, s.tones)); if (typeof NX !== 'undefined') Object.values(NX).forEach(s => check('part3 추가패턴', s.py, s.tones)); Object.values(WX).forEach(w => check('part3 추가단어', w[1], T.hgTones(w))); Object.values(W).forEach(w => check('part3 단어', w[1], T.hgTones(w))); }
   if (window.VOC) VOC.forEach(c => c.words.forEach(w => { check('단어장 ' + c.name, w.py.replace(/…/g, ''), w.parts); (w.ex || []).forEach(e => check('단어장 예문', e.py.replace(/…/g, ''), e.tones)); }));
   if (window.MW) { MW.words.forEach(w => { check('양사', w.py, w.parts); w.ph.forEach(e => check('양사 표현', e.py, e.tones)); }); MW.sents.forEach(e => check('양사 문장', e.py, e.tones)); }
+  if (window.GR) [...GR.book.flatMap(u => u.points), ...GR.extra, ...GR.up].forEach(p => p.ex.forEach(e => check('문법 ' + p.t, e.py, e.tones))), GR.memo.forEach(m => m.rows.forEach(e => check('통암기', e.py, e.tones)));
   return {n, res};
 })()`;
 (async () => {
   const b = await chromium.launch(); const p = await b.newPage();
   let total = 0;
-  for (const f of ['part1', 'part2', 'part3', 'vocab']) {
+  for (const f of ['part1', 'part2', 'part3', 'vocab', 'grammar']) {
     await p.goto(ROOT + f + '/index.html'); await p.waitForTimeout(300);
     const {n, res} = await p.evaluate(CHECK); total += res.length;
     console.log('== ' + f + ': 검사 ' + n + '개, 문제 ' + res.length + '개'); res.forEach(r => console.log(' - ' + r));

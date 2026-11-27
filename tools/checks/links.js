@@ -10,6 +10,7 @@ const CHECK = `(() => {
   if (typeof ALL !== 'undefined') { ALL.forEach(x => [x.q, ...x.a, ...(x.alt || []).map(a => a.s)].forEach(s => rows.push(s))); Object.values(NEW).forEach(s => rows.push(s)); if (typeof NX !== 'undefined') Object.values(NX).forEach(s => rows.push(s)); }
   if (window.VOC) VOC.forEach(c => c.words.forEach(w => (w.ex || []).forEach(e => rows.push(e))));
   if (window.MW) [...MW.words.flatMap(w => w.ph), ...MW.sents].forEach(e => rows.push(e));
+  if (window.GR) [...GR.book.flatMap(u => u.points), ...GR.extra, ...GR.up].forEach(p => p.ex.forEach(e => rows.push(e))), GR.memo.forEach(m => m.rows.forEach(e => rows.push(e)));
   const miss = {};
   rows.forEach(r => { const d = document.createElement('div'); d.innerHTML = TSC.sayHTML(r); const l = d.querySelector('.py'); if (!l) return;
     [...l.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join(' ').replace(/\\([^)]*\\)/g, '').split(/\\s+/).map(w => w.replace(/[,.?!…]/g, '')).filter(w => w && w !== '/' && w !== '___').forEach(w => { miss[w] = r.ko; }); });
@@ -17,7 +18,7 @@ const CHECK = `(() => {
 })()`;
 (async () => {
   const b = await chromium.launch(); const p = await b.newPage(); let total = 0;
-  for (const f of ['part1', 'part2', 'part3', 'vocab']) {
+  for (const f of ['part1', 'part2', 'part3', 'vocab', 'grammar']) {
     await p.goto(ROOT + f + '/index.html'); await p.waitForTimeout(300);
     const m = await p.evaluate(CHECK); total += m.length;
     console.log('== ' + f + ': 연결 안 된 단어 ' + m.length + '개'); m.forEach(x => console.log(' - ' + x));
