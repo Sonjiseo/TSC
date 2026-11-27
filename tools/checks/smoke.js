@@ -5,7 +5,7 @@ const path = require('path'), fs = require('fs');
 const ROOT = 'file://' + path.resolve(__dirname, '..', '..') + '/';
 const SHOTS = path.join(__dirname, 'shots'); fs.mkdirSync(SHOTS, {recursive: true});
 const PAGES = [['index.html', []], ['part1/index.html', ['learn', 'me', 'words', 'exam']], ['part2/index.html', ['ex', 'vocab', 'pattern', 'appendix', 'quiz']],
-  ['part3/index.html', ['learn', 'pattern', 'words', 'exam']], ['vocab/index.html', ['list', 'card']]];
+  ['part3/index.html', ['learn', 'pattern', 'words', 'exam']], ['vocab/index.html', ['list', 'card', 'mw']]];
 (async () => {
   const b = await chromium.launch();
   const errs = [];

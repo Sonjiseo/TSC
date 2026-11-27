@@ -95,3 +95,34 @@ for c in out:
                 else: i += hit
 print('unlinked', len(miss))
 for k, v in miss.items(): print(' ', k, '|', v)
+
+# ---- 양사 탭 (measure.py → vocab/measure.js) ----
+from measure import MW, GROUPS, SENTS, LEX as MLEX
+def row(hz, py, ko):
+    hg, parts = render(py); return {'hz': hz, 'py': py, 'ko': ko, 'hg': hg, 'tones': parts}
+mw = []
+for i, (grade, hz, py, ko, target, note, ph) in enumerate(MW):
+    hg, parts = render(py)
+    mw.append({'id': 'mw:' + str(i), 'grade': grade, 'hz': hz, 'py': py, 'hg': hg, 'parts': parts, 'ko': ko, 'target': target, 'note': note, 'ph': [row(*p) for p in ph]})
+sents = [dict(row(hz, py, ko), part=part) for part, hz, py, ko in SENTS]
+mlex = [[py, '|'.join(conv(x) for x in syllables(py)), '양사: ' + ko] for _, hz, py, ko, *_ in MW]
+mlex += [[py, '|'.join(conv(x) for x in syllables(py)), ko] for py, ko in MLEX]
+with open(os.path.join(ROOT, 'vocab', 'measure.js'), 'w', encoding='utf-8') as f:
+    f.write('// 양사 탭 데이터. tools/vocab/measure.py를 고친 뒤 build.py로 만든다.\n')
+    f.write('window.MW=' + json.dumps({'words': mw, 'groups': GROUPS, 'sents': sents, 'lex': mlex}, ensure_ascii=False, separators=(',', ':')) + ';\n')
+for py, _, _ in mlex: keys.add(norm(py))
+mmiss = {}
+for w in mw:
+    for e in w['ph'] + []:
+        pass
+for e in [p for w in mw for p in w['ph']] + sents:
+    toks = [norm(t) for t in e['py'].split(' ') if t not in ('/', '…')]
+    i = 0
+    while i < len(toks):
+        hit = 0
+        for n in (3, 2, 1):
+            if ' '.join(toks[i:i+n]) in keys: hit = n; break
+        if not hit: mmiss[toks[i]] = e['py']; i += 1
+        else: i += hit
+print('measure', len(mw), 'phrases', sum(len(w['ph']) for w in mw), 'unlinked', len(mmiss))
+for k, v in mmiss.items(): print(' ', k, '|', v)

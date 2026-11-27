@@ -9,6 +9,7 @@
 <script src="../assets/app.js"></script>
 <script src="../assets/words.js"></script>
 <script src="data.js"></script>
+<script src="measure.js"></script>
 </head>
 <body class="has-bottom">
 <main class="wrap">
@@ -35,9 +36,24 @@ function summary(){ const s = T.load('tsc-summary', {}); s.voc = {done: prog.cou
 /* 예문 속 단어 뜻: 단어장 단어 + 기본 단어 */
 ALLW.forEach(w => T.addLex({py: w.py.replace(/\s*…\s*/g, ' ').replace(/\s+/g, ' ').trim(), hg: w.hg, parts: w.parts, ko: w.ko}));
 T.addLexList(window.VOC_FUNC);
-T.lexPick = (key, list, c) => {
+T.addLexList(window.MW.lex);
+T.lexPick = (key, list0, c) => {
+  let list = list0;
   const by = s => list.find(x => x.ko.includes(s));
   const has = k => c.keys.includes(k);
+  /* 양사: 숫자·zhè·nà·nǎ·jǐ·měi 뒤면 양사 뜻, 아니면 다른 뜻 */
+  const mws = list.filter(x => x.ko.startsWith('양사'));
+  if (mws.length) {
+    if (/^(yī|yí|yì|liǎng|sān|sì|wǔ|liù|qī|bā|jiǔ|shí|jǐ|zhè|nà|nǎ|měi|zhège|nàge|[a-zǎāáàěēéèǐīíìǒōóòǔūúùǚ]*shí[a-zǎāáàěēéèǐīíìǒōóòǔūúù]*|[a-zǎāáàěēéèǐīíìǒōóòǔūúù]*bǎi|[a-zǎāáàěēéèǐīíìǒōóòǔūúù]*qiān)$/.test(c.prev || '')) {
+      if (key === 'zhī') return /^(qiānbǐ|yuánzhūbǐ)/.test(c.next || '') ? mws.find(x => x.ko.includes('자루')) : mws.find(x => x.ko.includes('마리'));
+      if (key === 'jiā') return mws[0];
+      return mws[0];
+    }
+    const rest = list.filter(x => !x.ko.startsWith('양사'));
+    if (rest.length === 1) return rest[0];
+    if (!rest.length) return mws[0];
+    list = rest;
+  }
   switch (key) {
     case 'jiàn': return c.next === 'yīfu' ? by('벌') : by('만나');
     case 'jiā': return ['zhè', 'nà'].includes(c.prev) ? by('세는') : by('집');
@@ -49,6 +65,10 @@ T.lexPick = (key, list, c) => {
     case 'nán': return by('어렵');
     case 'dài': return c.next === 'sǎn' ? by('챙기') : by('쓰다');
     case 'lí': return c.next ? by('거리') : by('배');
+    case 'zài': return ['shuō', 'lái', 'yě', 'jiàn'].includes(c.next) ? by('다시') : by('~에서');
+    case 'shì': return c.prev === 'jiàn' ? by('일') : by('이다');
+    case 'lù': return c.prev === 'tiáo' ? by('길') : by('노선');
+    case 'kè': return ['mén', 'shàng', 'xià'].includes(c.prev) ? by('수업') : by('그램');
     case 'hào': return c.next === 'fángjiān' ? by('호') : by('날짜');
     case 'duō': if (['cháng', 'gāo', 'zhòng', 'dà', 'yuǎn', 'jiǔ'].includes(c.next)) return by('얼마나');
       return ['chuān', 'chī', 'hē'].includes(c.next) ? by('더') : by('많다');
@@ -58,7 +78,7 @@ T.lexPick = (key, list, c) => {
     default: return null;
   }
 };
-T.exampleSource = () => STAR.flatMap(w => w.ex);
+T.exampleSource = () => [...STAR.flatMap(w => w.ex), ...window.MW.words.flatMap(w => w.ph), ...window.MW.sents];
 const view = $('#view');
 
 /* ===== 목록 ===== */
@@ -94,6 +114,7 @@ function controls(){
 }
 let deck = [], dpos = 0;
 function render(){
+  if (st.mode === 'mw') return renderMW();
   const list = pool();
   let h = controls();
   if (!list.length) h += st.onlyWrong ? T.emptyWrong : '<div class="card empty">이 주제에는 ★ 핵심 단어가 없어요. ‘★ 핵심만’을 끄면 전체 단어가 보여요.</div>';
@@ -118,7 +139,63 @@ function render(){
   $('#no') && ($('#no').onclick = () => next(false));
   $('#again') && ($('#again').onclick = () => { deck = []; render(); });
 }
+
+/* ===== 양사 탭 (measure.js) ===== */
+const MW = window.MW;
+const mwSt = Object.assign({grade: 'S', sub: 'list'}, T.load('tsc-voc-mw', {}));
+const saveMw = () => T.save('tsc-voc-mw', mwSt);
+const GRADE = {S: 'S등급 · 꼭 외울 16개', A: 'A등급 · 3급 보완·4급 대비', B: 'B등급 · 여유 있을 때'};
+let mdeck = [], mpos = 0;
+const mwPool = () => MW.words.filter(w => mwSt.grade === 'all' || w.grade === mwSt.grade);
+function mwRow(w, i){
+  const s = T.markState('mw', w.id);
+  return '<div class="vrow' + (s ? ' ' + s : '') + '" data-id="' + w.id + '">' +
+    '<div class="vw" data-w="' + esc(JSON.stringify({py: w.py, hg: w.hg, parts: w.parts, ko: '양사: ' + w.ko})) + '" role="button" tabindex="0">' +
+      '<div class="say"><div class="line py"><span class="star" style="color:var(--muted)">' + (i + 1) + '</span>' + esc(T.pinyinWithExpanded(w.py)) + '</div><div class="line hg">' + T.toneHTML(w.hg, w.parts) + '</div></div></div>' +
+    '<div class="vk">' + esc(w.ko) + '<small>' + esc(w.target) + '</small>' + '<button class="vexbtn" type="button" data-ex aria-expanded="false">표현 ' + w.ph.length + '</button></div>' +
+    T.markBtns('mw', w.id) +
+    '<div class="vex" hidden>' + (w.note ? '<p class="small muted" style="margin:6px 0 0">💡 ' + esc(w.note) + '</p>' : '') + w.ph.map(exRow).join('') + '</div></div>';
+}
+function renderMW(){
+  const sub = '<div class="row" style="margin-top:14px"><span class="seg" id="mwsub">' + [['list', '양사 목록'], ['rule', '규칙·문장'], ['test', '암기 테스트']].map(([k, n]) => '<button type="button" data-sub="' + k + '" aria-pressed="' + (mwSt.sub === k) + '">' + n + '</button>').join('') + '</span></div>';
+  const chips = '<div class="chips">' + [['S', 'S등급'], ['A', 'A등급'], ['B', 'B등급'], ['all', '전체']].map(([g, n]) => '<button class="chip" type="button" data-grade="' + g + '" aria-pressed="' + (mwSt.grade === g) + '">' + n + '<span class="n">' + MW.words.filter(w => g === 'all' || w.grade === g).length + '</span></button>').join('') + '</div>';
+  let h = sub;
+  if (mwSt.sub === 'list') {
+    const done = MW.words.filter(w => T.markState('mw', w.id) === 'done').length;
+    h += '<div class="card" style="margin-top:10px"><div class="stat"><b>' + done + '</b><span class="muted">/ ' + MW.words.length + ' 양사 외움</span></div>' +
+      '<p class="small muted" style="margin:8px 0 0">양사는 명사와 한 덩어리로 외워요: <b>yì bēi kāfēi</b>(커피 한 잔). 2부분은 답변 시간이 6초라 떠올릴 틈이 없어요.</p></div>' + chips;
+    const groups = mwSt.grade === 'all' ? ['S', 'A', 'B'] : [mwSt.grade];
+    h += groups.map(g => '<section class="card vlist"><h3 class="vcat">' + GRADE[g] + '</h3>' + MW.words.filter(w => w.grade === g).map(w => mwRow(w, MW.words.filter(x => x.grade === g).indexOf(w))).join('') + '</section>').join('');
+    h += '<p class="small muted">양사를 누르면 상세, ‘표현’을 누르면 결합 표현이 열려요. S·A·B 등급은 시험 유형과 회화 활용도를 기준으로 정한 학습 순서예요(공식 출제 통계는 없어요).</p>';
+  } else if (mwSt.sub === 'rule') {
+    const tip = (t, b) => '<div class="card"><h3 style="margin:0 0 8px">' + t + '</h3>' + b + '</div>';
+    h += tip('어순: 숫자 + 양사 + 명사', '<p style="margin:0">한국어는 ‘커피 한 잔’, 중국어는 ‘한 잔 커피’ 순서예요.</p><p class="small muted" style="margin:6px 0 0">yì bēi kāfēi 커피 한 잔 · zhè běn shū 이 책 · nà běn shū 저 책 · nǎ běn shū 어느 책 · jǐ běn shū 책 몇 권</p>') +
+      tip('2는 èr이 아니라 liǎng', '<p class="small muted" style="margin:0">liǎng ge rén 두 사람 · liǎng běn shū 책 두 권 · liǎng bēi kāfēi 커피 두 잔 · liǎng kǒu rén 가족 두 명</p>') +
+      tip('yī(1)의 성조 변화', '<p style="margin:0">1·2·3성 앞에서는 <b>yì</b>, 4성 앞에서는 <b>yí</b>.</p><p class="small muted" style="margin:6px 0 0">yì bēi(1성) · yì píng(2성) · yì běn(3성) · yí jiàn(4성) · yí ge — ge는 원래 4성(gè)이라 yí ge.</p>') +
+      tip('묶어서 외우기', '<div class="small" style="display:grid;gap:6px">' + MW.groups.map(([m, t]) => '<div><b style="color:var(--brand-text)">' + esc(m) + '</b> — ' + esc(t) + '</div>').join('') + '</div>') +
+      '<h2 style="margin-top:24px">실전 문장</h2>' + MW.sents.map(e => '<div class="card" style="padding:12px 14px;margin:8px 0"><span class="badge">' + esc(e.part) + '</span><p class="ko" style="margin:6px 0 0">' + esc(e.ko) + '</p>' + T.revealHTML(T.sayHTML(e)) + '</div>').join('');
+  } else {
+    h += chips;
+    const ids = mwPool().flatMap(w => w.ph.map((_, j) => w.id + ':' + j));
+    if (!mdeck.length || !mdeck.every(id => ids.includes(id))) { mdeck = ids.slice().sort(() => Math.random() - .5); mpos = 0; }
+    if (mpos >= mdeck.length) h += '<div class="card center"><h3>한 바퀴 끝! 👏</h3><button class="btn primary" type="button" id="mwagain">다시 섞어서 시작</button></div>';
+    else {
+      const [a, b, j] = mdeck[mpos].split(':'); const w = MW.words.find(x => x.id === a + ':' + b), e = w.ph[+j];
+      h += '<div class="small muted" style="margin-top:6px">' + (mpos + 1) + ' / ' + mdeck.length + '</div><div class="progress" style="margin:6px 0"><i style="width:' + (mpos / mdeck.length * 100) + '%"></i></div>' +
+        '<div class="flash" id="flash"><button class="inner" type="button" aria-label="카드 뒤집기"><div class="face"><div class="small muted">양사를 넣어 중국어로 말해 보세요</div><div class="big-ko">' + esc(e.ko) + '</div><div class="small muted">눌러서 뒤집기</div></div>' +
+        '<div class="face back">' + T.sayHTML(e) + '<div class="small muted" style="margin-top:6px">양사 ' + esc(w.py) + ' · ' + esc(w.ko) + '</div></div></button></div>' + T.judgeBtns();
+    }
+  }
+  view.innerHTML = h;
+  const fl = $('#flash'); if (fl) fl.querySelector('.inner').onclick = e => { if (e.target.closest('.tw')) return; fl.classList.toggle('flipped'); };
+  const next = ok => { T.setMark('mwt', mdeck[mpos], ok ? 'done' : 'wrong'); if (!ok) mdeck.push(mdeck[mpos]); mpos++; renderMW(); };
+  $('#yes') && ($('#yes').onclick = () => next(true));
+  $('#no') && ($('#no').onclick = () => next(false));
+  $('#mwagain') && ($('#mwagain').onclick = () => { mdeck = []; renderMW(); });
+}
 view.addEventListener('click', e => {
+  const sb = e.target.closest('[data-sub]'); if (sb) { mwSt.sub = sb.dataset.sub; saveMw(); renderMW(); return; }
+  const gb = e.target.closest('[data-grade]'); if (gb) { mwSt.grade = gb.dataset.grade; mdeck = []; saveMw(); renderMW(); return; }
   const xb = e.target.closest('[data-ex]'); if (xb) { const box = xb.closest('.vrow').querySelector('.vex'); box.hidden = !box.hidden; xb.setAttribute('aria-expanded', !box.hidden); return; }
   const c = e.target.closest('[data-cat]'); if (c) { st.cat = c.dataset.cat; deck = []; saveSt(); render(); return; }
   if (e.target.closest('[data-star]')) { st.onlyStar = !st.onlyStar; deck = []; saveSt(); render(); return; }
@@ -128,7 +205,7 @@ view.addEventListener('click', e => {
 T.onMark = () => { summary(); const el = $('#statcard'); if (el) { const d = prog.count(STAR.map(w => w.id)); el.querySelector('.stat b').textContent = d; el.querySelector('.progress i').style.width = (d / STAR.length * 100) + '%'; } };
 
 /* 아래 탭: 목록 / 카드 넘기기 */
-const TABS = [['list', '목록', '📋'], ['card', '카드 넘기기', '🃏']];
+const TABS = [['list', '목록', '📋'], ['card', '카드 넘기기', '🃏'], ['mw', '양사', '🔢']];
 function go(t){
   st.mode = t; deck = []; saveSt();
   T.tabs($('#tabs'), TABS, t, go); render(); scrollTo({top: 0});

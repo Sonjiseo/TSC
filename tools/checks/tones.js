@@ -19,6 +19,7 @@ const CHECK = `(() => {
   if (typeof QS !== 'undefined') { QS.forEach(q => check('part1 질문', q.q.py, q.q.tones)); answers().forEach(a => a && check('part1 답변', a.py, a.tones)); [...Object.values(W), ...Object.values(FAMILY), ...Object.values(COMPANIES), ...Object.values(DEPTS).filter(Boolean)].forEach(w => check('part1 단어', w[1], T.hgTones(w))); }
   if (typeof ALL !== 'undefined') { ALL.forEach(x => [x.q, ...x.a, ...(x.alt || []).map(a => a.s)].forEach(s => check('part3 문장', s.py, s.tones))); Object.values(NEW).forEach(s => check('part3 추가예문', s.py, s.tones)); if (typeof NX !== 'undefined') Object.values(NX).forEach(s => check('part3 추가패턴', s.py, s.tones)); Object.values(WX).forEach(w => check('part3 추가단어', w[1], T.hgTones(w))); Object.values(W).forEach(w => check('part3 단어', w[1], T.hgTones(w))); }
   if (window.VOC) VOC.forEach(c => c.words.forEach(w => { check('단어장 ' + c.name, w.py.replace(/…/g, ''), w.parts); (w.ex || []).forEach(e => check('단어장 예문', e.py.replace(/…/g, ''), e.tones)); }));
+  if (window.MW) { MW.words.forEach(w => { check('양사', w.py, w.parts); w.ph.forEach(e => check('양사 표현', e.py, e.tones)); }); MW.sents.forEach(e => check('양사 문장', e.py, e.tones)); }
   return {n, res};
 })()`;
 (async () => {
