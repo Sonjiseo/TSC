@@ -15,7 +15,7 @@
   <section class="hero">
     <div class="eyebrow">TSC 단어장</div>
     <h1>주제별 단어장</h1>
-    <p>교재 단어를 주제별로 모았어요. <b>★ 3급 핵심 단어</b>부터 외우고, 예문은 2·3·4부분 답변에 그대로 써 보세요.</p>
+    <p>교재 단어를 주제별로 모았어요. 이름 끝에 <b>+</b>가 붙은 주제는 교재에 없지만 3급에 꼭 필요한 기초 단어예요. <b>★ 3급 핵심 단어</b>부터 외우고, 예문은 2·3·4부분 답변에 그대로 써 보세요.</p>
   </section>
   <nav class="tabs bottom" id="tabs" aria-label="단어장 메뉴"></nav>
   <section id="view" aria-live="polite"></section>
@@ -44,10 +44,17 @@ T.lexPick = (key, list, c) => {
     case 'kuài': if (['qù', 'lái', 'huí'].includes(c.next)) return by('빨리');
       return (c.next === 'máo' || /^(yí|liǎng|sān|sì|wǔ|liù|qī|bā|jiǔ|shí|sānshí|shíwǔ|èrshí)/.test(c.prev || '')) ? by('위안') : by('빠르');
     case 'fēn': return has('diǎn') ? by('분') : by('0.01');
-    case 'zuò': return c.keys.slice(c.i + 1, c.i + 6).some(k => /^(dìtiě|chē|gōnggòng|chūzūchē|fēijī)/.test(k)) ? by('타다') : by('하다');
+    case 'zuò': return (c.keys.slice(c.i + 1, c.i + 6).some(k => /^(dìtiě|chē|gōnggòng|chūzūchē|fēijī)/.test(k)) || (c.next === 'shénme' && c.next2 === 'qù')) ? by('타다') : by('하다');
     case 'zhù': return c.i === 0 ? by('기원') : by('살다');
     case 'nán': return by('어렵');
     case 'dài': return c.next === 'sǎn' ? by('챙기') : by('쓰다');
+    case 'lí': return c.next ? by('거리') : by('배');
+    case 'hào': return c.next === 'fángjiān' ? by('호') : by('날짜');
+    case 'duō': if (['cháng', 'gāo', 'zhòng', 'dà', 'yuǎn', 'jiǔ'].includes(c.next)) return by('얼마나');
+      return ['chuān', 'chī', 'hē'].includes(c.next) ? by('더') : by('많다');
+    case 'lái': return by('오다');
+    case 'qián': return (c.prev === 'duōshao' || c.prev === 'fù' || c.prev === 'huā') ? by('돈') : by('앞');
+    case 'xiǎng': return ['jiārén', 'jiā', 'nǐ', 'māma', 'bàba'].includes(c.next) ? by('그리워') : by('싶다');
     default: return null;
   }
 };

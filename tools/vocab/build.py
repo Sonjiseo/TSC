@@ -3,9 +3,12 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from py2hg import conv, syllables, tone
 from words import CATS
+from words2 import CATS2
+CATS = CATS2 + CATS  # 추가 기초 단어를 앞에
 from ex1 import EX as E1
 from ex2 import EX as E2
-EX = {**E1, **E2}
+from ex3 import EX as E3
+EX = {**E1, **E2, **E3}
 
 def sandhi(t):
     o = t[:]; i = 0
