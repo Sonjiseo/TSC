@@ -12,6 +12,24 @@
 <script src="../vocab/measure.js"></script>
 <script src="../vocab/lexpick.js"></script>
 <script src="data.js"></script>
+<style>
+.gsec{font-size:12px;font-weight:700;letter-spacing:.02em;color:var(--muted);margin:14px 0 6px}
+.gf{background:var(--surface-2);border-radius:12px;padding:10px 12px;display:grid;gap:8px}
+.gf-line{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.gf-box{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:4px 9px;font-weight:600;font-size:15px}
+.gf-plus{color:var(--muted);font-weight:700}
+.gf-list{display:flex;flex-wrap:wrap;gap:6px}
+.gf-list span{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:4px 9px;font-size:14px}
+.gk{color:var(--brand-text);font-weight:700}
+.gd{margin:0;padding-left:18px;font-size:15px;line-height:1.6}
+.gd li+li{margin-top:2px}
+.gd1{margin:0;font-size:15px;line-height:1.6}
+.gex{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
+.gsec+.gex{border-top:0;padding-top:0;margin-top:0}
+.gex .ko{margin:0 0 2px;font-size:15px;font-weight:600}
+.gnum{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--brand-soft);color:var(--brand-text);font-size:12px;font-weight:700;margin-right:6px;vertical-align:1px}
+.tw.gkey{background:var(--brand-soft);box-shadow:inset 0 -2px 0 var(--brand);border-radius:4px 4px 0 0;padding:0 3px;font-weight:700}
+</style>
 </head>
 <body class="has-bottom">
 <main class="wrap">
@@ -68,13 +86,38 @@ function summary(){ const s = T.load('tsc-summary', {}); s.gr = {done: prog.coun
 
 /* ===== 문법 카드 ===== */
 const exRow = e => '<div style="margin-top:10px"><p class="ko" style="margin:0;font-size:15px">' + (e.tsc ? '<span class="badge accent" style="margin-right:6px">TSC 활용</span>' : '') + esc(e.ko) + '</p>' + T.revealHTML(T.sayHTML(e)) + '</div>';
+/* 공식: ' / '는 줄 바꿈, ' + '는 칸으로 나누고 병음은 파란 글씨, ' · '는 목록 */
+const PYR = /([A-Za-zāáǎàēéěèīíǐìōóǒòūúǔùǚǜü'][A-Za-zāáǎàēéěèīíǐìōóǒòūúǔùǚǜü'…]*(?:\s+[a-zāáǎàēéěèīíǐìōóǒòūúǔùǚǜü'…]+)*)/g;
+const pyHi = t => esc(t).replace(PYR, '<b class="gk">$1</b>');
+function formulaHTML(f){
+  return f.split(' / ').map(line => {
+    if (line.includes(' · ')) return '<div class="gf-list">' + line.split(' · ').map(x => '<span>' + pyHi(x) + '</span>').join('') + '</div>';
+    return '<div class="gf-line">' + line.split(' + ').map(x => '<span class="gf-box">' + pyHi(x) + '</span>').join('<span class="gf-plus">+</span>') + '</div>';
+  }).join('');
+}
+const descHTML = d => { d = d.replace(/\s*\(HSK [^)]*\)/, ''); const ss = d.split(/(?<=\.)\s+(?=\S)/); return ss.length > 1 ? '<ul class="gd">' + ss.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '<p class="gd1">' + esc(d) + '</p>'; };
+const tipHTML = t => '<div class="tip small"><span>💡</span><span>' + (t.includes(' · ') ? t.split(' · ').map(esc).join('<br>') : esc(t)) + '</span></div>';
+const keysOf = f => [...new Set((f.match(/[a-zāáǎàēéěèīíǐìōóǒòūúǔùǚü']{2,}/gi) || []).map(x => x.toLowerCase()))];
 function pcard(p, n){
   const s = T.markState('gr', p.id);
-  return '<article class="card' + (s ? ' ' + s : '') + '" data-id="' + p.id + '"><div class="card-head"><span class="badge">' + n + '</span><span class="label" style="color:var(--ink);font-size:16px;flex:1">' + esc(p.t) + '</span>' + T.markBtns('gr', p.id) + '</div>' +
-    '<p style="font-size:17px;font-weight:650;margin:0 0 4px;color:var(--brand-text)">' + esc(p.f) + '</p><p class="small muted" style="margin:0">' + esc(p.d) + '</p>' +
-    (p.tip ? '<div class="tip small"><span>💡</span><span>' + esc(p.tip) + '</span></div>' : '') +
-    p.ex.map(exRow).join('') +
-    (p.fix ? '<p class="small muted" style="margin:10px 0 0">✏️ 사전 표기로 고침 — ' + esc(p.fix) + '</p>' : '') + '</article>';
+  return '<article class="card gcard' + (s ? ' ' + s : '') + '" data-id="' + p.id + '" data-keys="' + esc(keysOf(p.f).join(' ')) + '"><div class="card-head"><span class="badge">' + n + '</span><span class="label" style="color:var(--ink);font-size:17px;flex:1">' + esc(p.t) + ((p.d.match(/\(HSK ([^)]*)\)/) || [])[1] ? ' <span class="badge" style="font-size:11px;vertical-align:2px">HSK ' + esc(p.d.match(/\(HSK ([^)]*)\)/)[1]) + '</span>' : '') + '</span>' + T.markBtns('gr', p.id) + '</div>' +
+    '<div class="gsec">공식</div><div class="gf">' + formulaHTML(p.f) + '</div>' +
+    '<div class="gsec">설명</div>' + descHTML(p.d) +
+    (p.tip ? tipHTML(p.tip) : '') +
+    '<div class="gsec">예문 <span class="muted" style="font-weight:500">· 한국어를 보고 먼저 말해 보세요</span></div>' +
+    p.ex.map((e, i) => '<div class="gex"><p class="ko"><span class="gnum">' + (i + 1) + '</span>' + (e.tsc ? '<span class="badge accent" style="margin-right:6px">TSC 활용</span>' : '') + esc(e.ko) + '</p>' + T.revealHTML(T.sayHTML(e)) + '</div>').join('') +
+    (p.fix ? '<p class="small muted" style="margin:12px 0 0">✏️ 사전 표기로 고침 — ' + esc(p.fix) + '</p>' : '') + '</article>';
+}
+/* 예문 속 공식 단어(핵심어)를 파란 바탕으로 */
+const SUFFIX = ['guo', 'le', 'men', 'de'];
+function markKeys(){
+  view.querySelectorAll('.gcard').forEach(c => {
+    const keys = (c.dataset.keys || '').split(' ').filter(Boolean); if (!keys.length) return;
+    c.querySelectorAll('.say .py .tw').forEach(t => {
+      const w = t.textContent.toLowerCase().replace(/\s*\([^)]*\)/g, '').replace(/[,.?!]/g, '').trim();
+      if (keys.includes(w) || w.split(' ').some(x => keys.includes(x)) || keys.some(k => SUFFIX.includes(k) && w.length > k.length && w.endsWith(k) && k !== 'de')) t.classList.add('gkey');
+    });
+  });
 }
 const wrongN = list => list.filter(p => T.markState('gr', p.id) === 'wrong').length;
 const filt = list => onlyWrong ? list.filter(p => T.markState('gr', p.id) === 'wrong') : list;
@@ -95,6 +138,7 @@ function viewBook(){
   });
   if (!any) h += onlyWrong ? T.emptyWrong : '';
   view.innerHTML = h;
+  markKeys();
 }
 function viewExtra(){
   const ps = filt(G.extra);
@@ -102,6 +146,7 @@ function viewExtra(){
     '<h2 style="margin-top:18px">추가 문법 <span class="badge accent" style="vertical-align:3px">교재 밖</span></h2><p class="small muted">교재에는 없지만 3급 답변에 꼭 쓰는 HSK 2~3급 기본 문법이에요. 예문은 새로 만든 문장이에요. 3부분 패턴 탭의 추가 패턴(guo, rúguǒ … jiù, xiān … ránhòu, yǐjīng … le)도 함께 보세요.</p>' +
     '<div class="chips">' + T.wrongToggle(onlyWrong, wrongN(G.extra)) + '</div>' +
     (ps.length ? ps.map(p => pcard(p, G.extra.indexOf(p) + 1)).join('') : T.emptyWrong);
+  markKeys();
 }
 function viewUp(){
   const book = filt(G.up.filter(p => !p.add)), add = filt(G.up.filter(p => p.add));
@@ -109,6 +154,7 @@ function viewUp(){
     (book.length ? '<h2 style="margin-top:18px">업그레이드 표현 공식</h2><p class="small muted">교재 156~159쪽. 이런 표현을 하나씩 섞으면 답변이 길고 자연스러워져요.</p>' + book.map((p, i) => pcard(p, G.up.indexOf(p) + 1)).join('') : '') +
     (add.length ? '<h2 style="margin-top:28px">추가 표현 <span class="badge accent" style="vertical-align:3px">교재 밖</span></h2><p class="small muted">4~5부분에서 점수를 올리는 연결 표현이에요(HSK 3~4급). 예문은 새로 만든 문장이에요.</p>' + add.map(p => pcard(p, G.up.indexOf(p) + 1)).join('') : '') +
     (!book.length && !add.length ? T.emptyWrong : '');
+  markKeys();
 }
 function viewMemo(){
   const rows = G.memo.flatMap(m => m.rows);
