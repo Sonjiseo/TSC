@@ -251,3 +251,6 @@ img.photo{display:block;width:100%;border-radius:14px;margin-top:10px}
 .vex{grid-column:1/-1;padding:2px 0 4px}
 .vexi{margin-top:6px;padding:8px 10px;border-radius:10px;background:var(--surface-2)}
 .vexi .small{margin:0}
+
+/* 문장별 줄 바꿈 (한 답변 안의 여러 문장) */
+.say+.say{margin-top:12px}
