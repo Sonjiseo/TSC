@@ -316,4 +316,19 @@ T.tabs = (el, items, current, onPick) => {
   el.innerHTML = items.map(([id, label, icon], i) => '<button type="button" role="tab" data-id="' + id + '" aria-selected="' + (id === current) + '"><span class="ti" aria-hidden="true">' + (icon || '') + '</span>' + esc(label) + '</button>').join('');
   el.onclick = e => { const b = e.target.closest('button'); if (!b) return; T.$$('button', el).forEach(x => x.setAttribute('aria-selected', x === b)); onPick(b.dataset.id); };
 };
+/* ---------- 분류 버튼이 많으면 한 줄 선택 버튼으로 접기 ---------- */
+/* .chips 안 버튼이 6개 이상이면 '현재 선택 ▾' 버튼 하나로 보이고, 누르면 두 줄 격자로 전체가 펼쳐진다 */
+const compactChips = el => {
+  el.dataset.cc = '1';
+  const items = [...el.children].filter(b => b.matches('button.chip'));
+  if (items.length < 6) return;
+  const label = items.filter(b => b.getAttribute('aria-pressed') === 'true').map(b => { const c = b.cloneNode(true); c.querySelector('.n') && c.querySelector('.n').remove(); return c.textContent.trim(); }).join(' · ') || '선택하기';
+  const btn = document.createElement('button');
+  btn.type = 'button'; btn.className = 'chip-pick'; btn.setAttribute('aria-expanded', 'false');
+  btn.innerHTML = '<span class="cp-l">' + esc(label) + '</span><span class="cp-n">' + items.length + '개 중 고르기 ▾</span>';
+  el.classList.add('cgrid'); el.hidden = true; el.before(btn);
+  btn.onclick = () => { el.hidden = !el.hidden; btn.setAttribute('aria-expanded', String(!el.hidden)); btn.querySelector('.cp-n').textContent = items.length + '개 중 고르기 ' + (el.hidden ? '▾' : '▴'); };
+};
+new MutationObserver(() => document.querySelectorAll('.chips:not([data-cc])').forEach(compactChips)).observe(document.documentElement, {childList: true, subtree: true});
+
 })();

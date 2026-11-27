@@ -86,7 +86,7 @@ function statCard(list, label){
 function viewBook(){
   const all = G.book.flatMap(u => u.points);
   let h = statCard(all, '교재 문법 외움') +
-    '<div class="chips">' + [['all', '전체'], ...G.book.map(u => [u.id, u.lesson])].map(([id, n]) => '<button class="chip" type="button" data-unit="' + id + '" aria-pressed="' + (st.unit === id) + '">' + esc(n) + '</button>').join('') + T.wrongToggle(onlyWrong, wrongN(all)) + '</div>';
+    '<div class="chips">' + [['all', '전체'], ...G.book.map(u => [u.id, u.lesson])].map(([id, n]) => '<button class="chip" type="button" data-unit="' + id + '" aria-pressed="' + (st.unit === id) + '">' + esc(n) + '</button>').join('') + '</div><div class="chips">' + T.wrongToggle(onlyWrong, wrongN(all)) + '</div>';
   const units = G.book.filter(u => st.unit === 'all' || u.id === st.unit);
   let any = false;
   units.forEach(u => {
